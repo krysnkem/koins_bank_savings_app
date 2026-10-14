@@ -135,7 +135,7 @@ The application uses **`shared_preferences`** for real disk persistence:
 
 ## REST API Integration
 
-- **Endpoint**: Integrates with the public REST API (`https://jsonplaceholder.typicode.com/posts`) to dynamically retrieve and display **Financial Insights & Tips** on the Dashboard.
+- **Endpoint**: Integrates with the public REST API (`https://dummyjson.com/posts`) to dynamically retrieve and display **Financial Insights & Tips** on the Dashboard.
 - **Resilience**: Implements full loading shimmers, network timeout handling, and user-friendly error banners with one-tap retry functionality.
 
 ---
@@ -160,10 +160,10 @@ fvm flutter analyze
 ```
 
 ### Automated Test Suite
-The codebase includes 61 comprehensive automated unit and widget tests covering:
+The codebase includes 73 comprehensive automated unit and widget tests covering:
 - **Router & Shell Configuration**: Top-level route configuration, `rootNavigatorKey`, and all 4 `StatefulShellBranch` destinations (`/dashboard`, `/products`, `/my-savings`, `/profile`).
 - **Disk Persistence Layer**: `SavingsLocalDataSource` tests verifying JSON serialization and write-to-disk for created plans; `AuthLocalDataSource` tests for session persistence.
-- **Widget Flow Tests**: `CreateSavingsScreen` widget test verifying that completing the form writes the created plan directly to local storage (`SharedPreferences`) and displays a success notification; `SavingsPlansScreen` widget test verifying portfolio rendering.
+- **Widget Flow Tests**: `CreateSavingsScreen` widget test verifying that completing the form writes the created plan directly to local storage (`SharedPreferences`) and displays a success notification; `SavingsPlansScreen` widget test verifying portfolio rendering; `DashboardScreen`, `LoginScreen`, `ProfileScreen`, and `ProductDetailsScreen` componentized widget tests.
 - **Validators**: Email format regex, password length ($\ge 8$), required fields, positive amount checks.
 - **Formatters**: Nigerian Naira currency formatting (`₦`), percentage formatting (`p.a.`), dynamic greetings.
 - **Exception Hierarchy**: Proper codes and messages for `AuthException`, `NetworkException`, and `ServerException`.
@@ -172,7 +172,7 @@ The codebase includes 61 comprehensive automated unit and widget tests covering:
 
 ```bash
 fvm flutter test
-# Output: 61 tests passed! (100% green)
+# Output: 73 tests passed! (100% green)
 ```
 
 ---
@@ -257,7 +257,7 @@ fvm flutter build apk --release
 - [x] **Local Persistence** (SharedPreferences session and created savings plans)
 - [x] **Design System & Theming** (Material 3, strict tokens in `AppColors`, `AppRadius`, `AppShadows`, `AppSpacing`)
 - [x] **State Management** (Riverpod with full architectural justification)
-- [x] **Unit & Repository Tests** (50 automated tests passing with 0 failures)
+- [x] **Unit & Repository Tests** (73 automated tests passing with 0 failures)
 - [x] **Code Quality** (`flutter analyze` with 0 warnings)
 - [x] **Comprehensive README** (Architecture explanation, setup, packages, assumptions)
 - [x] **Compiled APK** (`app-debug.apk`)
