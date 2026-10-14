@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+import 'app_radius.dart';
 import 'app_spacing.dart';
+
+export 'app_colors.dart';
+export 'app_radius.dart';
+export 'app_spacing.dart';
+export 'app_text_styles.dart';
 
 class AppTheme {
   AppTheme._();
@@ -19,7 +25,7 @@ class AppTheme {
       secondaryContainer: AppColors.secondaryContainer,
       onSecondaryContainer: AppColors.secondaryDark,
       error: AppColors.error,
-      onError: Colors.white,
+      onError: AppColors.white,
       errorContainer: AppColors.errorContainer,
       onErrorContainer: AppColors.error,
       surface: AppColors.surface,
@@ -29,12 +35,12 @@ class AppTheme {
       outline: AppColors.outline,
       outlineVariant: AppColors.divider,
       shadow: AppColors.shadow,
-      scrim: Colors.black54,
+      scrim: AppColors.scrim,
       inverseSurface: AppColors.secondaryDark,
-      onInverseSurface: Colors.white,
+      onInverseSurface: AppColors.white,
       inversePrimary: AppColors.primaryLight,
       tertiary: AppColors.info,
-      onTertiary: Colors.white,
+      onTertiary: AppColors.white,
     );
 
     return ThemeData(
@@ -56,19 +62,19 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
         systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
+          statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.dark,
           statusBarBrightness: Brightness.light,
         ),
       ),
 
       // Cards
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         elevation: 0,
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
-          side: const BorderSide(color: AppColors.divider, width: 1),
+          borderRadius: AppRadius.card,
+          side: BorderSide(color: AppColors.cardBorder, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -80,12 +86,13 @@ class AppTheme {
           foregroundColor: AppColors.textOnPrimary,
           elevation: 0,
           minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.button,
           ),
           textStyle: GoogleFonts.inter(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
           ),
         ),
       ),
@@ -96,11 +103,11 @@ class AppTheme {
           foregroundColor: AppColors.primary,
           minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
           side: const BorderSide(color: AppColors.primary, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.button,
           ),
           textStyle: GoogleFonts.inter(
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -123,27 +130,27 @@ class AppTheme {
         fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
+          vertical: 18,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
-          borderSide: const BorderSide(color: AppColors.outline),
+        border: const OutlineInputBorder(
+          borderRadius: AppRadius.input,
+          borderSide: BorderSide(color: AppColors.inputBorder),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
-          borderSide: const BorderSide(color: AppColors.outline),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.input,
+          borderSide: BorderSide(color: AppColors.inputBorder),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.input,
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
-          borderSide: const BorderSide(color: AppColors.error),
+        errorBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.input,
+          borderSide: BorderSide(color: AppColors.error),
         ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
+        focusedErrorBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.input,
+          borderSide: BorderSide(color: AppColors.error, width: 2),
         ),
         labelStyle: GoogleFonts.inter(
           fontSize: 14,
@@ -162,7 +169,7 @@ class AppTheme {
       // Floating Action Button
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
         elevation: 2,
       ),
 
@@ -177,11 +184,11 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.secondaryDark,
         contentTextStyle: GoogleFonts.inter(
-          color: Colors.white,
+          color: AppColors.white,
           fontSize: 14,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppRadius.snackBar,
         ),
         behavior: SnackBarBehavior.floating,
       ),
@@ -216,10 +223,11 @@ class AppTheme {
           fontWeight: FontWeight.w500,
           color: AppColors.secondaryDark,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppRadius.chip,
         ),
       ),
     );
   }
 }
+
