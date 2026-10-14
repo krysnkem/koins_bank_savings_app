@@ -6,9 +6,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../widgets/common/staggered_rolling_number.dart';
 import '../../../savings/presentation/providers/savings_provider.dart';
 
-/// Displays the greeting and the user's total savings summary with a number roll meter animation.
+/// Displays the greeting and the user's total savings summary with Moniepoint-style staggered vertical rolling digits.
 class DashboardHeaderSection extends ConsumerWidget {
   const DashboardHeaderSection({super.key});
 
@@ -36,20 +37,10 @@ class DashboardHeaderSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 2),
-        TweenAnimationBuilder<double>(
-          key: ValueKey('total_savings_${isLoaded}_$totalSavings'),
-          tween: Tween<double>(
-            begin: 0.0,
-            end: isLoaded ? totalSavings : 0.0,
-          ),
-          duration: const Duration(milliseconds: 1200),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, child) {
-            return Text(
-              Formatters.naira(value),
-              style: AppTextStyles.moneyHero,
-            );
-          },
+        StaggeredRollingNumber(
+          amount: totalSavings,
+          isLoaded: isLoaded,
+          style: AppTextStyles.moneyHero,
         ),
       ],
     );
