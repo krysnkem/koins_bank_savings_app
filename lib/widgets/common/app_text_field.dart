@@ -58,13 +58,24 @@ class AppTextField extends StatelessWidget {
               )
             : null,
         prefixIconColor: AppColors.primary,
+        prefixIconConstraints: const BoxConstraints(
+          minWidth: 44,
+          minHeight: 48,
+        ),
         suffixIcon: suffix != null
-            ? Container(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
-                alignment: Alignment.centerRight,
-                child: suffix,
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Flexible(child: suffix!),
+                  const SizedBox(width: AppSpacing.sm),
+                ],
               )
             : null,
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 0,
+          minHeight: 0,
+        ),
         filled: true,
         fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(
