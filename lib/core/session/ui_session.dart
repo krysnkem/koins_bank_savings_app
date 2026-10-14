@@ -112,6 +112,8 @@ class UiSessionNotifier extends StateNotifier<UiSession> {
     return null;
   }
 
+  void setLoggedIn(bool value) => state = state.copyWith(loggedIn: value);
+
   /// EXPECTATION: AuthRepository.logout → AuthLocalDataSource.clearSession.
   void logout() => state = state.copyWith(loggedIn: false);
 

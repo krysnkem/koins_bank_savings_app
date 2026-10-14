@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../services/mock_backend_service.dart';
+import '../../data/datasources/products_remote_data_source.dart';
 import '../../data/models/savings_product.dart';
 import '../../data/repositories/products_repository.dart';
 
@@ -25,18 +27,34 @@ class ProductsError extends ProductsState {
   const ProductsError(this.message);
 }
 
+final productsRepositoryProvider = Provider<ProductsRepository>((ref) {
+  return ProductsRepositoryImpl(
+    remoteDataSource: ProductsRemoteDataSourceImpl(MockBackendService()),
+  );
+});
+
+final productsNotifierProvider =
+    StateNotifierProvider<ProductsNotifier, ProductsState>((ref) {
+  final repo = ref.watch(productsRepositoryProvider);
+  return ProductsNotifier(repo);
+});
+
 class ProductsNotifier extends StateNotifier<ProductsState> {
   ProductsNotifier(this._repository) : super(const ProductsInitial());
 
   final ProductsRepository _repository;
 
   Future<void> load() async {
-    // TODO: emit Loading, _repository.getProducts, Loaded or ProductsError
-    throw UnimplementedError('TODO $_repository');
+    state = const ProductsLoading();
+    try {
+      final products = await _repository.getProducts();
+      state = ProductsLoaded(products);
+    } catch (e) {
+      state = ProductsError(e.toString().replaceAll('Exception: ', ''));
+    }
   }
 
   Future<SavingsProduct> loadById(String id) {
-    // TODO: return _repository.getProductById(id)
-    throw UnimplementedError('TODO $_repository');
+    return _repository.getProductById(id);
   }
 }

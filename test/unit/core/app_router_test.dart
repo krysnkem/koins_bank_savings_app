@@ -32,9 +32,9 @@ void main() {
       final savingsBranch = shellRoute.branches[1];
       expect((savingsBranch.routes.first as GoRoute).path, '/products');
 
-      // Branch 2: Transactions
-      final transactionsBranch = shellRoute.branches[2];
-      expect((transactionsBranch.routes.first as GoRoute).path, '/transactions');
+      // Branch 2: My Savings (Created Plans)
+      final mySavingsBranch = shellRoute.branches[2];
+      expect((mySavingsBranch.routes.first as GoRoute).path, '/my-savings');
 
       // Branch 3: Profile
       final profileBranch = shellRoute.branches[3];

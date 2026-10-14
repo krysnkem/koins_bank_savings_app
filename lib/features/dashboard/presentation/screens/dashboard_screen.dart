@@ -136,7 +136,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
               ),
               InkWell(
-                onTap: () => context.go('/products'),
+                onTap: () => context.go('/my-savings'),
                 borderRadius: AppRadius.badge,
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -177,42 +177,45 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     border: Border.all(color: AppColors.cardBorder),
                     boxShadow: AppShadows.card,
                   ),
-                  child: ListTile(
-                    onTap: () => context.push('/product/${plan.productId}'),
-                    leading: CircleAvatar(
-                      backgroundColor: AppColors.primaryContainer,
-                      child: Icon(icons[i % icons.length], color: AppColors.primary),
-                    ),
-                    title: Text(
-                      plan.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        fontSize: 15,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      onTap: () => context.push('/product/${plan.productId}'),
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.primaryContainer,
+                        child: Icon(icons[i % icons.length], color: AppColors.primary),
                       ),
-                    ),
-                    subtitle: Text(
-                      plan.frequency,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          Formatters.naira(plan.amount == 0 ? plan.targetAmount : plan.amount),
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
+                      title: Text(
+                        plan.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
                         ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
-                      ],
+                      ),
+                      subtitle: Text(
+                        plan.frequency,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            Formatters.naira(plan.amount == 0 ? plan.targetAmount : plan.amount),
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -250,39 +253,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           border: Border.all(color: AppColors.cardBorder),
                           boxShadow: AppShadows.card,
                         ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.primaryContainer,
-                            child: Icon(
-                              tipIcons[i % tipIcons.length],
-                              color: AppColors.primary,
-                              size: 22,
-                            ),
-                          ),
-                          title: Text(
-                            _tips[i].title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(
-                              _tips[i].body,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 13,
-                                height: 1.3,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.primaryContainer,
+                              child: Icon(
+                                tipIcons[i % tipIcons.length],
+                                color: AppColors.primary,
+                                size: 22,
                               ),
                             ),
+                            title: Text(
+                              _tips[i].title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Text(
+                                _tips[i].body,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                            trailing: const Icon(Icons.more_vert, size: 20, color: AppColors.textTertiary),
                           ),
-                          trailing: const Icon(Icons.more_vert, size: 20, color: AppColors.textTertiary),
                         ),
                       ),
                     ),

@@ -20,8 +20,7 @@ class SavingsRemoteDataSourceImpl implements SavingsRemoteDataSource {
 
   @override
   Future<List<SavingsPlan>> getSavingsPlans() {
-    // TODO: return _backend.getSavingsPlans()
-    throw UnimplementedError('TODO $_backend');
+    return _backend.getSavingsPlans();
   }
 
   @override
@@ -32,7 +31,12 @@ class SavingsRemoteDataSourceImpl implements SavingsRemoteDataSource {
     required double monthlyContribution,
     required String duration,
   }) {
-    // TODO: return _backend.createSavingsPlan(...)
-    throw UnimplementedError('TODO $_backend');
+    return _backend.createSavingsPlan(
+      name: name,
+      productId: productId,
+      targetAmount: targetAmount,
+      monthlyContribution: monthlyContribution,
+      duration: duration,
+    );
   }
 }

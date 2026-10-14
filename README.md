@@ -64,13 +64,13 @@ lib/
 │   │   └── presentation/      # LoginScreen, ProfileScreen
 │   ├── dashboard/             # Financial dashboard domain
 │   │   ├── data/              # FinancialTip model, tips datasource, repository
-│   │   └── presentation/      # DashboardScreen, TransactionsScreen, widgets, providers
+│   │   └── presentation/      # DashboardScreen, widgets, providers
 │   ├── products/              # Savings Products domain
 │   │   ├── data/              # SavingsProduct model, datasource, repository
 │   │   └── presentation/      # ProductsScreen, ProductDetailsScreen, ProductCard
 │   └── savings/               # Savings Plan creation & management domain
 │       ├── data/              # SavingsPlan model, local/remote datasources, repository
-│       └── presentation/      # CreateSavingsScreen
+│       └── presentation/      # CreateSavingsScreen, SavingsPlansScreen
 ├── services/                  # BackendService contract & MockBackendService implementation
 ├── repositories/              # Repository exports & contracts
 ├── widgets/
@@ -108,9 +108,9 @@ The application enforces a **100% tokenized design system** with zero raw numeri
 The application implements declarative routing powered by **`go_router`** and Flutter's Router API:
 
 - **Stateful Bottom Navigation**: Uses `StatefulShellRoute.indexedStack` paired with `StatefulNavigationShell` in [MainShellScreen](file:///Users/Chris/magic/koins_savings_app/lib/core/router/main_shell_screen.dart).
-- **Independent Branch Preservation**: 4 separate branches (`Dashboard`, `Savings / Products`, `Transactions`, `More / Profile`), each with its own `GlobalKey<NavigatorState>`. Switching tabs preserves scroll positions, input states, and loaded data without rebuilds or re-fetching.
+- **Independent Branch Preservation**: 4 separate branches (`Dashboard`, `Savings / Products`, `My Savings`, `More / Profile`), each with its own `GlobalKey<NavigatorState>`. Switching tabs preserves scroll positions, input states, and loaded data without rebuilds or re-fetching.
 - **Root Navigator Overlays**: Modal flows such as **Product Details** (`/product/:id`) and **Create Savings Plan** (`/create`) declare `parentNavigatorKey: rootNavigatorKey`, ensuring they slide over the bottom navigation bar as clean, focused full-screen experiences.
-- **Deep Linking Ready**: All destinations are URL-addressable (`/dashboard`, `/products`, `/transactions`, `/profile`, `/product/:id`, `/create/:productId`).
+- **Deep Linking Ready**: All destinations are URL-addressable (`/dashboard`, `/products`, `/my-savings`, `/profile`, `/product/:id`, `/create`). Legacy routes (`/transactions`, `/savings-plans`) gracefully redirect to `/my-savings`.
 
 ---
 
@@ -127,9 +127,9 @@ The application implements declarative routing powered by **`go_router`** and Fl
 
 ## Local Storage Strategy
 
-The application uses **`shared_preferences`** to persist:
-1. **User Authentication Session**: Retains login status, email, and user profile data across app restarts.
-2. **Created Savings Plans**: Serializes user-created savings plans to JSON and persists them locally, ensuring plans survive process restarts and display in the Recent Savings list immediately.
+The application uses **`shared_preferences`** for real disk persistence:
+1. **User Authentication Session**: Retains login status, email, and user profile data across app restarts via `AuthLocalDataSource`.
+2. **Created Savings Plans**: Serializes user-created savings plans to JSON and persists them directly to disk via `SavingsLocalDataSource` (storage key `'saved_savings_plans'`). When a user creates a new savings plan, it is immediately written to disk and loaded into both the Dashboard recent list and the My Savings screen.
 
 ---
 
@@ -159,18 +159,20 @@ fvm flutter analyze
 # Output: No issues found! (0 warnings, 0 errors)
 ```
 
-### Automated Unit Test Suite
-The codebase includes 52 comprehensive unit tests covering:
-- **Router & Shell Configuration**: Top-level route configuration, `rootNavigatorKey`, and all 4 `StatefulShellBranch` destinations.
+### Automated Test Suite
+The codebase includes 61 comprehensive automated unit and widget tests covering:
+- **Router & Shell Configuration**: Top-level route configuration, `rootNavigatorKey`, and all 4 `StatefulShellBranch` destinations (`/dashboard`, `/products`, `/my-savings`, `/profile`).
+- **Disk Persistence Layer**: `SavingsLocalDataSource` tests verifying JSON serialization and write-to-disk for created plans; `AuthLocalDataSource` tests for session persistence.
+- **Widget Flow Tests**: `CreateSavingsScreen` widget test verifying that completing the form writes the created plan directly to local storage (`SharedPreferences`) and displays a success notification; `SavingsPlansScreen` widget test verifying portfolio rendering.
 - **Validators**: Email format regex, password length ($\ge 8$), required fields, positive amount checks.
 - **Formatters**: Nigerian Naira currency formatting (`₦`), percentage formatting (`p.a.`), dynamic greetings.
 - **Exception Hierarchy**: Proper codes and messages for `AuthException`, `NetworkException`, and `ServerException`.
-- **Repositories**: `AuthRepository`, `ProductsRepository`, and `SavingsRepository` error propagation and session persistence.
+- **Repositories**: `AuthRepository`, `ProductsRepository`, and `SavingsRepository` error propagation and disk persistence.
 - **Mock Backend Service**: Login credential verification, product lookup, plan creation, and offline exception handling.
 
 ```bash
 fvm flutter test
-# Output: 52 tests passed! (100% green)
+# Output: 61 tests passed! (100% green)
 ```
 
 ---
@@ -217,9 +219,9 @@ fvm flutter build apk --release
 ## Screenshots & Visual Showcase
 
 ### Persistent Shell & Tab Navigation (go_router)
-| 1. Dashboard (Tab 0) | 2. Savings Products (Tab 1) | 3. Transactions (Tab 2) | 4. More / Profile (Tab 3) |
+| 1. Dashboard (Tab 0) | 2. Savings Products (Tab 1) | 3. My Savings (Tab 2) | 4. More / Profile (Tab 3) |
 | :---: | :---: | :---: | :---: |
-| <img src="screenshots/09_gorouter_dashboard.png" width="200" alt="Dashboard Tab" /> | <img src="screenshots/10_gorouter_savings_tab.png" width="200" alt="Savings Products Tab" /> | <img src="screenshots/11_gorouter_transactions_tab.png" width="200" alt="Transactions Tab" /> | <img src="screenshots/12_gorouter_more_tab.png" width="200" alt="More Profile Tab" /> |
+| <img src="screenshots/09_gorouter_dashboard.png" width="200" alt="Dashboard Tab" /> | <img src="screenshots/10_gorouter_savings_tab.png" width="200" alt="Savings Products Tab" /> | <img src="screenshots/54_my_savings_tab.png" width="200" alt="My Savings Tab" /> | <img src="screenshots/12_gorouter_more_tab.png" width="200" alt="More Profile Tab" /> |
 
 ### Full-Screen Overlay Flows & Plan Creation
 | 5. Create Savings Plan (Overlay) | 6. Product Details Screen | 7. Login Authentication |

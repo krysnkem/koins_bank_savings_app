@@ -10,6 +10,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../widgets/common/app_logo.dart';
 import '../../../../widgets/common/app_text_field.dart';
 import '../../../../widgets/common/primary_button.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -33,22 +34,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    debugPrint('LOGIN _submit triggered: email="${_email.text}", password="${_password.text}"');
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('LOGIN validation failed');
+      return;
+    }
     setState(() => _loading = true);
-    // EXPECTATION: authProvider.login(email, password).
-    // Success → persist session and replace stack with Dashboard.
-    // AuthException → snackbar "Invalid email or password".
-    // NetworkException → snackbar "No internet connection".
-    final error = await ref.read(uiSessionProvider.notifier).login(
+
+    await ref.read(authNotifierProvider.notifier).login(
+          _email.text.trim(),
+          _password.text,
+        );
+    final authState = ref.read(authNotifierProvider);
+    if (authState is AuthError) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(authState.message)));
+      return;
+    }
+
+    await ref.read(uiSessionProvider.notifier).login(
           _email.text,
           _password.text,
         );
     if (!mounted) return;
     setState(() => _loading = false);
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
-      return;
-    }
     context.go('/dashboard');
   }
 

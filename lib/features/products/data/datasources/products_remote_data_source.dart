@@ -14,13 +14,11 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
 
   @override
   Future<List<SavingsProduct>> getSavingsProducts() {
-    // TODO: return _backend.getSavingsProducts()
-    throw UnimplementedError('TODO $_backend');
+    return _backend.getSavingsProducts();
   }
 
   @override
   Future<SavingsProduct> getProductById(String id) {
-    // TODO: return _backend.getProductById(id)
-    throw UnimplementedError('TODO $_backend');
+    return _backend.getProductById(id);
   }
 }

@@ -18,7 +18,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
   }) {
-    // TODO: return _backend.login(email: email, password: password)
-    throw UnimplementedError('TODO $_backend');
+    return _backend.login(email: email, password: password);
   }
 }

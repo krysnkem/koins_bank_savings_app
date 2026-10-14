@@ -6,17 +6,17 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/profile_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
-import '../../features/dashboard/presentation/screens/transactions_screen.dart';
 import '../../features/products/presentation/screens/product_details_screen.dart';
 import '../../features/products/presentation/screens/products_screen.dart';
 import '../../features/savings/presentation/screens/create_savings_screen.dart';
+import '../../features/savings/presentation/screens/savings_plans_screen.dart';
 import 'main_shell_screen.dart';
 
 /// Global navigation keys for top-level root and shell branches.
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final dashboardNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'dashboard');
 final savingsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'savings');
-final transactionsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'transactions');
+final mySavingsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'my_savings');
 final profileNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
 /// Riverpod provider delivering the configured [GoRouter].
@@ -41,6 +41,16 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const LoginScreen(),
     ),
 
+    // Backward compatibility redirects
+    GoRoute(
+      path: '/transactions',
+      redirect: (context, state) => '/my-savings',
+    ),
+    GoRoute(
+      path: '/savings-plans',
+      redirect: (context, state) => '/my-savings',
+    ),
+
     // Stateful Navigation Shell with IndexedStack for persistent bottom navigation
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -58,7 +68,7 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
 
-        // Branch 1: Savings (Products catalog)
+        // Branch 1: Products catalog
         StatefulShellBranch(
           navigatorKey: savingsNavigatorKey,
           routes: [
@@ -69,13 +79,13 @@ final GoRouter appRouter = GoRouter(
           ],
         ),
 
-        // Branch 2: Transactions
+        // Branch 2: My Savings (Created Plans)
         StatefulShellBranch(
-          navigatorKey: transactionsNavigatorKey,
+          navigatorKey: mySavingsNavigatorKey,
           routes: [
             GoRoute(
-              path: '/transactions',
-              builder: (context, state) => const TransactionsScreen(),
+              path: '/my-savings',
+              builder: (context, state) => const SavingsPlansScreen(),
             ),
           ],
         ),

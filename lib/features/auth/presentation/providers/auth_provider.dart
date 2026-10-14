@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../services/mock_backend_service.dart';
+import '../../data/datasources/auth_local_data_source.dart';
+import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/models/auth_user.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -29,6 +32,19 @@ class AuthError extends AuthState {
   const AuthError(this.message);
 }
 
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepositoryImpl(
+    remoteDataSource: AuthRemoteDataSourceImpl(MockBackendService()),
+    localDataSource: AuthLocalDataSourceImpl(),
+  );
+});
+
+final authNotifierProvider =
+    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final repo = ref.watch(authRepositoryProvider);
+  return AuthNotifier(repo);
+});
+
 /// Concrete notifier. Depends on [AuthRepository], not [AuthRepositoryImpl].
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._repository) : super(const AuthInitial());
@@ -36,17 +52,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
 
   Future<void> login(String email, String password) async {
-    // TODO: emit AuthLoading, call _repository.login, emit Authenticated or AuthError
-    throw UnimplementedError('TODO $_repository');
+    state = const AuthLoading();
+    try {
+      final user = await _repository.login(email: email, password: password);
+      state = AuthAuthenticated(user);
+    } catch (e) {
+      state = AuthError(e.toString().replaceAll('Exception: ', ''));
+    }
   }
 
   Future<void> logout() async {
-    // TODO: _repository.logout then emit AuthUnauthenticated
-    throw UnimplementedError('TODO $_repository');
+    await _repository.logout();
+    state = const AuthUnauthenticated();
   }
 
   Future<void> checkAuthStatus() async {
-    // TODO: _repository.getCurrentUser then Authenticated or Unauthenticated
-    throw UnimplementedError('TODO $_repository');
+    try {
+      final user = await _repository.getCurrentUser();
+      if (user != null) {
+        state = AuthAuthenticated(user);
+      } else {
+        state = const AuthUnauthenticated();
+      }
+    } catch (_) {
+      state = const AuthUnauthenticated();
+    }
   }
 }

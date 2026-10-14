@@ -12,7 +12,6 @@ class TipsRemoteDataSourceImpl implements TipsRemoteDataSource {
 
   @override
   Future<List<FinancialTip>> getFinancialTips() {
-    // TODO: return _backend.getFinancialTips()
-    throw UnimplementedError('TODO $_backend');
+    return _backend.getFinancialTips();
   }
 }

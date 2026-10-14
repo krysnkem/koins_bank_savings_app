@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../services/mock_backend_service.dart';
 import '../../../savings/data/models/savings_plan.dart';
 import '../../../savings/data/repositories/savings_repository.dart';
+import '../../../savings/presentation/providers/savings_provider.dart';
+import '../../data/datasources/tips_remote_data_source.dart';
 import '../../data/models/financial_tip.dart';
 import '../../data/repositories/dashboard_repository.dart';
 
@@ -28,6 +31,22 @@ class DashboardError extends DashboardState {
   const DashboardError(this.message);
 }
 
+final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
+  return DashboardRepositoryImpl(
+    tipsDataSource: TipsRemoteDataSourceImpl(MockBackendService()),
+  );
+});
+
+final dashboardNotifierProvider =
+    StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
+  final dashboardRepo = ref.watch(dashboardRepositoryProvider);
+  final savingsRepo = ref.watch(savingsRepositoryProvider);
+  return DashboardNotifier(
+    dashboardRepository: dashboardRepo,
+    savingsRepository: savingsRepo,
+  );
+});
+
 class DashboardNotifier extends StateNotifier<DashboardState> {
   DashboardNotifier({
     required DashboardRepository dashboardRepository,
@@ -40,10 +59,22 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   final SavingsRepository _savings;
 
   Future<void> load() async {
-    // TODO: emit Loading
-    // TODO: recent = await _savings.getPlans() (take 3)
-    // TODO: tips = await _dashboard.getTips()
-    // TODO: emit DashboardLoaded or DashboardError
-    throw UnimplementedError('TODO $_dashboard $_savings');
+    state = const DashboardLoading();
+    try {
+      final results = await Future.wait([
+        _savings.getPlans(),
+        _dashboard.getTips().catchError((_) => <FinancialTip>[]),
+      ]);
+
+      final allPlans = results[0] as List<SavingsPlan>;
+      final tips = results[1] as List<FinancialTip>;
+
+      state = DashboardLoaded(
+        recentPlans: allPlans.take(3).toList(),
+        tips: tips,
+      );
+    } catch (e) {
+      state = DashboardError(e.toString().replaceAll('Exception: ', ''));
+    }
   }
 }

@@ -54,19 +54,23 @@ class MainShellScreen extends StatelessWidget {
           elevation: 0,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
               label: 'Dashboard',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.savings_outlined),
+              activeIcon: Icon(Icons.savings),
+              label: 'Explore',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.account_balance_wallet_outlined),
-              label: 'Savings',
+              activeIcon: Icon(Icons.account_balance_wallet),
+              label: 'My Savings',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              label: 'Transactions',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz),
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
               label: 'More',
             ),
           ],

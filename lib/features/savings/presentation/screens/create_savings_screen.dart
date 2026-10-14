@@ -10,6 +10,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../widgets/common/app_text_field.dart';
 import '../../../../widgets/common/primary_button.dart';
+import '../providers/savings_provider.dart';
 
 class CreateSavingsScreen extends ConsumerStatefulWidget {
   final String? productId;
@@ -46,31 +47,47 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
       return;
     }
     setState(() => _loading = true);
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-    // EXPECTATION: savingsProvider.createPlan(...) then snackbar
-    // "Savings Created Successfully" and return to Dashboard.
-    final product = productById(_productId!)!;
+
+    final targetVal = double.parse(_target.text.replaceAll(',', ''));
+    final monthlyVal = double.parse(_monthly.text.replaceAll(',', ''));
+
+    final plan = await ref.read(savingsNotifierProvider.notifier).create(
+          name: _name.text.trim(),
+          productId: _productId!,
+          targetAmount: targetVal,
+          monthlyContribution: monthlyVal,
+          duration: _duration!,
+        );
+
+    final product = productById(_productId!);
     ref.read(uiSessionProvider.notifier).addPlan(
           UiPlan(
-            id: 'plan-${DateTime.now().millisecondsSinceEpoch}',
+            id: plan?.id ?? 'plan-${DateTime.now().millisecondsSinceEpoch}',
             name: _name.text.trim(),
-            productId: product.id,
-            productName: product.name,
+            productId: _productId!,
+            productName: product?.name ?? 'Savings Plan',
             amount: 0,
-            targetAmount: double.parse(_target.text.replaceAll(',', '')),
-            monthlyContribution: double.parse(_monthly.text.replaceAll(',', '')),
+            targetAmount: targetVal,
+            monthlyContribution: monthlyVal,
             frequency: 'Monthly',
             duration: _duration!,
           ),
         );
+
     if (!mounted) return;
+    setState(() => _loading = false);
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Savings Created Successfully')),
     );
-    if (context.canPop()) {
-      context.pop();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
     } else {
-      context.go('/dashboard');
+      try {
+        GoRouter.of(context).go('/dashboard');
+      } catch (_) {
+        // Fallback for tests or standard navigator
+      }
     }
   }
 

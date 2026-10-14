@@ -7,6 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../widgets/common/app_logo.dart';
 
+import '../providers/auth_provider.dart';
+
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -18,12 +20,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // EXPECTATION: wait ~1.8s, then AuthLocalDataSource.isLoggedIn().
-    // Session present → Dashboard (clear stack). Otherwise → Login.
-    Future<void>.delayed(const Duration(milliseconds: 1800), () {
+    Future<void>.delayed(const Duration(milliseconds: 1800), () async {
       if (!mounted) return;
-      final loggedIn = ref.read(uiSessionProvider).loggedIn;
-      context.go(loggedIn ? '/dashboard' : '/login');
+      final repo = ref.read(authRepositoryProvider);
+      final isLoggedIn = await repo.isLoggedIn();
+      if (isLoggedIn) {
+        ref.read(uiSessionProvider.notifier).setLoggedIn(true);
+      }
+      if (!mounted) return;
+      context.go(isLoggedIn ? '/dashboard' : '/login');
     });
   }
 

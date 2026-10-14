@@ -26,6 +26,10 @@ class SavingsRepositoryImpl implements SavingsRepository {
 
   @override
   Future<List<SavingsPlan>> getPlans() async {
+    final localPlans = await _local.getPlans();
+    if (localPlans.isNotEmpty) {
+      return localPlans;
+    }
     final plans = await _remote.getSavingsPlans();
     await _local.savePlans(plans);
     return plans;

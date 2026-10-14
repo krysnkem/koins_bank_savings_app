@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../services/mock_backend_service.dart';
+import '../../data/datasources/savings_local_data_source.dart';
+import '../../data/datasources/savings_remote_data_source.dart';
 import '../../data/models/savings_plan.dart';
 import '../../data/repositories/savings_repository.dart';
 
@@ -30,24 +33,56 @@ class SavingsError extends SavingsState {
   const SavingsError(this.message);
 }
 
+final savingsRepositoryProvider = Provider<SavingsRepository>((ref) {
+  return SavingsRepositoryImpl(
+    remoteDataSource: SavingsRemoteDataSourceImpl(MockBackendService()),
+    localDataSource: SavingsLocalDataSourceImpl(),
+  );
+});
+
+final savingsNotifierProvider =
+    StateNotifierProvider<SavingsNotifier, SavingsState>((ref) {
+  final repo = ref.watch(savingsRepositoryProvider);
+  return SavingsNotifier(repo);
+});
+
 class SavingsNotifier extends StateNotifier<SavingsState> {
   SavingsNotifier(this._repository) : super(const SavingsInitial());
 
   final SavingsRepository _repository;
 
   Future<void> load() async {
-    // TODO: emit Loading, _repository.getPlans, Loaded or SavingsError
-    throw UnimplementedError('TODO $_repository');
+    state = const SavingsLoading();
+    try {
+      final plans = await _repository.getPlans();
+      state = SavingsLoaded(plans);
+    } catch (e) {
+      state = SavingsError(e.toString().replaceAll('Exception: ', ''));
+    }
   }
 
-  Future<void> create({
+  Future<SavingsPlan?> create({
     required String name,
     required String productId,
     required double targetAmount,
     required double monthlyContribution,
     required String duration,
   }) async {
-    // TODO: emit Loading, _repository.createPlan, SavingsCreated or SavingsError
-    throw UnimplementedError('TODO $_repository');
+    state = const SavingsLoading();
+    try {
+      final plan = await _repository.createPlan(
+        name: name,
+        productId: productId,
+        targetAmount: targetAmount,
+        monthlyContribution: monthlyContribution,
+        duration: duration,
+      );
+      final updatedPlans = await _repository.getPlans();
+      state = SavingsLoaded(updatedPlans);
+      return plan;
+    } catch (e) {
+      state = SavingsError(e.toString().replaceAll('Exception: ', ''));
+      return null;
+    }
   }
 }
