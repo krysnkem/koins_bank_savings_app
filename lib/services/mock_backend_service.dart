@@ -202,45 +202,22 @@ class MockBackendService implements BackendService {
   Future<List<DummyPost>> getPosts() async {
     await _ensureOnline();
 
-    // 1. Live Public REST API Call (DummyJSON posts endpoint)
+    final uri = Uri.parse('${AppConstants.baseUrl}/posts?limit=3');
     try {
-      final uri = Uri.parse('${AppConstants.baseUrl}/posts?limit=3');
-      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 4));
+      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 5));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
         final posts = (data['posts'] as List).cast<Map<String, dynamic>>();
-        if (posts.isNotEmpty) {
-          final mappedPosts = posts.map(DummyPost.fromJson).toList();
-          for (final post in mappedPosts) {
-            await _databaseService.insertPost({
-              'id': post.id.toString(),
-              'title': post.title,
-              'body': post.body,
-              'tags': post.tags.join(','),
-              'views': post.views,
-            });
-          }
-          return mappedPosts;
-        }
+        return posts.map(DummyPost.fromJson).toList();
+      } else {
+        throw ServerException('Failed to fetch posts from DummyJSON (HTTP ${res.statusCode})');
       }
-    } catch (_) {
-      // Gracefully fall back to persisted database records when offline or if dummy API times out
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw ServerException('Failed to fetch posts from DummyJSON: $e');
     }
-
-    // 2. Local Database Fallback (SQLite table)
-    await _simulateLatency();
-    final rows = await _databaseService.getPosts();
-    return rows.map((r) {
-      final tagsStr = r['tags']?.toString() ?? '';
-      return DummyPost(
-        id: int.tryParse(r['id'].toString()) ?? 1,
-        title: r['title']?.toString() ?? '',
-        body: r['body']?.toString() ?? '',
-        tags: tagsStr.isNotEmpty ? tagsStr.split(',') : const [],
-        views: r['views'] is int ? r['views'] as int : 0,
-      );
-    }).toList();
   }
 
   @override

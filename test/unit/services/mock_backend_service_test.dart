@@ -204,7 +204,7 @@ void main() {
       expect(posts.first.tags, contains('finance'));
     });
 
-    test('falls back gracefully to database posts when remote API fails', () async {
+    test('throws ServerException when remote API fails', () async {
       final mockClient = MockClient((request) async {
         return http.Response('Internal Server Error', 500);
       });
@@ -214,9 +214,10 @@ void main() {
         httpClient: mockClient,
       );
 
-      final posts = await customService.getPosts();
-      expect(posts, isNotEmpty);
-      expect(posts.first.id, isA<int>());
+      expect(
+        () => customService.getPosts(),
+        throwsA(isA<ServerException>()),
+      );
     });
 
     test('throws NetworkException when offline', () async {

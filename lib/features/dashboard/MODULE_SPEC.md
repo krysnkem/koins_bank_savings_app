@@ -67,7 +67,7 @@ Future<List<DummyPost>> getPosts()
 **Behaviour**
 1. If `!isNetworkAvailable` → throw `NetworkException`
 2. Fetch live data from `https://dummyjson.com/posts?limit=3`
-3. Fall back to local SQLite table (`dummy_posts`) if remote call fails or offline
+3. Returns parsed List<DummyPost> directly from the REST API without database persistence
 
 ---
 

@@ -4,7 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Database manager for Koins Savings App.
-/// Manages SQLite tables: users, savings_products, savings_plans, transactions, and dummy_posts.
+/// Manages SQLite tables: users, savings_products, savings_plans, and transactions.
 /// Specifically scoped to manage the user account: test@bank.com.
 class AppDatabase {
   AppDatabase({Database? db}) : _db = db;
@@ -33,8 +33,8 @@ class AppDatabase {
     }
   }
 
-  /// Database version (incremented to version 2 for dummy_posts table)
-  static const int databaseVersion = 2;
+  /// Database version
+  static const int databaseVersion = 3;
 
   /// Creates an in-memory SQLite database instance for fast, isolated tests.
   static Future<AppDatabase> createInMemory() async {
@@ -100,30 +100,13 @@ class AppDatabase {
     );
   }
 
-  /// Automatically ensures all tables exist and migrates legacy tables on open / upgrade.
+  /// Automatically ensures required tables exist and drops obsolete tables on open / upgrade.
   static Future<void> _migrateAndEnsureTables(Database db) async {
-    // 1. Ensure dummy_posts table is created if it does not exist
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS dummy_posts (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        body TEXT NOT NULL,
-        tags TEXT NOT NULL,
-        views INTEGER NOT NULL DEFAULT 0
-      );
-    ''');
-
-    // 2. Drop obsolete financial_tips table if still existing from previous version
+    // Drop obsolete tables if present
     try {
+      await db.execute('DROP TABLE IF EXISTS dummy_posts');
       await db.execute('DROP TABLE IF EXISTS financial_tips');
     } catch (_) {}
-
-    // 3. Ensure fallback dummy posts exist in dummy_posts table
-    final countResult = await db.rawQuery('SELECT COUNT(*) as count FROM dummy_posts');
-    final count = countResult.isNotEmpty ? (countResult.first['count'] as int? ?? 0) : 0;
-    if (count == 0) {
-      await _seedDummyPosts(db);
-    }
   }
 
   static Future<void> _createTables(Database db) async {
@@ -185,16 +168,6 @@ class AppDatabase {
         icon_key TEXT NOT NULL,
         created_at TEXT NOT NULL,
         FOREIGN KEY (user_email) REFERENCES users (email)
-      );
-    ''');
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS dummy_posts (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        body TEXT NOT NULL,
-        tags TEXT NOT NULL,
-        views INTEGER NOT NULL DEFAULT 0
       );
     ''');
   }
@@ -366,42 +339,6 @@ class AppDatabase {
     ];
     for (final tx in transactions) {
       await db.insert('transactions', tx);
-    }
-
-    // 5. Seed dummy posts
-    await _seedDummyPosts(db);
-  }
-
-  static Future<void> _seedDummyPosts(Database db) async {
-    final posts = [
-      {
-        'id': '1',
-        'title': 'His mother had always taught him',
-        'body': 'His mother had always taught him not to ever think of himself as better than others. He had tried to live by this motto.',
-        'tags': 'history,american,crime',
-        'views': 305,
-      },
-      {
-        'id': '2',
-        'title': 'He was an expert but not in a discipline',
-        'body': 'He was an expert but not in a discipline that anyone could fully appreciate. He knew how to hold the cone just right.',
-        'tags': 'french,fiction,english',
-        'views': 4884,
-      },
-      {
-        'id': '3',
-        'title': 'Dave watched as the forest burned up on the hill.',
-        'body': 'Dave watched as the forest burned up on the hill, only a few miles from her house. The car had been hastily packed.',
-        'tags': 'magical,history,french',
-        'views': 4152,
-      },
-    ];
-    for (final post in posts) {
-      await db.insert(
-        'dummy_posts',
-        post,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
     }
   }
 

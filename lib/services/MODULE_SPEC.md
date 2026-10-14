@@ -236,10 +236,10 @@ Future<List<DummyPost>> getPosts()
 
 1. `await _ensureOnline()`
 2. GET `https://dummyjson.com/posts?limit=3`
-3. Parse into `DummyPost` model instances and cache into SQLite (`dummy_posts` table)
-4. Graceful fallback to `DatabaseService.getPosts()` on HTTP failure or timeout
+3. Parse response into `List<DummyPost>`
+4. On non-200 HTTP response or network/parsing failure → throw `ServerException` or `NetworkException`
 
-This is the **required** real REST API call demanded by the assessment.
+This is the **required** real REST API call demanded by the assessment. Always fetched directly from the REST API without database persistence.
 
 ---
 

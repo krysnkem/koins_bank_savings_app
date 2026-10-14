@@ -18,11 +18,6 @@ abstract class DatabaseService {
   // Transactions
   Future<List<Map<String, dynamic>>> getTransactions({required String email});
   Future<void> insertTransaction(Map<String, dynamic> transaction);
-
-  // Dummy JSON Posts (offline cache / fallback)
-  Future<List<Map<String, dynamic>>> getPosts();
-  Future<void> insertPost(Map<String, dynamic> post);
-
   /// Closes database connection if applicable.
   Future<void> close();
 }
