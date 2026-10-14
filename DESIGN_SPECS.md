@@ -7,39 +7,43 @@
 ## Shared / Global Patterns
 
 ### Theme
-- Material 3 + Koins brand colours
-- Primary: `#22C55E`
-- Background: Soft mint `#F0FDF4`
-- Surface: White
-- Text: Dark green `#064E3B`
-- Consistent 12–16px border radius
+- Material 3 + Koins brand colours (calibrated against proposed visual mockups)
+- Primary: Deep Banking Emerald `#0B9234` (was `#22C55E`, calibrated for authoritative banking green)
+- Primary Dark: `#076B24`
+- Primary Container: Soft Mint Badge Tint `#E2F8E7`
+- Background: Pure White Canvas `#FFFFFF` / Pristine `#FAFCFA` (scaffold canvas; eliminates muddy green haze)
+- Surface: Crisp White `#FFFFFF` with subtle 1px border (`#E5E7EB`) and soft ambient shadows
+- Text Primary: Deep Forest Black `#001D0B` / `#072312` (maximum contrast and legibility)
+- Text Secondary: Muted Slate `#475569`
+- Text Tertiary: Subtle Hint `#94A3B8`
+- Tokenized border radius via `AppRadius` (`input`: 14, `button`: 14, `card`: 16, `chip`: 20, `tag`: 6, `snackBar`: 12)
 - Inter typography
 
 ### Common Components
-- Primary Button: Full-width, filled green, height 52px
-- Secondary Button: Outlined green
-- Input Fields: Outlined, filled white, clear focus state
-- Cards: White, subtle border or light elevation, 12–16px radius
-- Loading: Centered circular progress (green)
+- Primary Button: Full-width, filled deep emerald `#0B9234`, height 52px, `AppRadius.button`
+- Secondary / Outlined Button: Outlined deep emerald `#0B9234`
+- Input Fields: Two-layer field pattern – prominent field label on top, followed by 52px white input container with vertically centered prefix (`₦`) and suffix (`NGN`)
+- Cards: Pure white `#FFFFFF`, subtle 1px border (`rgba(0,0,0,0.06)`), 16px radius (`AppRadius.card`)
+- Bottom Navigation Bar: 4-tab bar (Dashboard, Savings, Transactions, More) anchoring the home hub
+- Loading: Centered circular progress (deep emerald)
 - Empty State: Icon + title + optional subtitle + action
 - Error State: Icon + message + Retry button
 - AppBar: Clean white, title left-aligned, optional actions
-- Snackbar: Floating, dark background for success/error messages
-- **Icons**: Used consistently on quick actions, product cards, profile, and empty/error states
+- Snackbar: Floating, dark background for success/error messages (`AppRadius.snackBar`)
 
 ### Navigation
 ```
 Login
-  └── Dashboard
-        ├── Create Savings
+  └── Dashboard (with 4-Tab Bottom Navigation Bar)
+        ├── Create Savings (standalone labeled input boxes)
         ├── Savings Products
         │     └── Savings Details
         │           └── Create Savings (pre-filled)
-        └── Profile
+        └── Profile (expanded avatar, crisp typography)
               └── Logout → Login
 ```
-- No bottom navigation for v1
-- Use AppBar back buttons + Dashboard as hub
+- Bottom navigation on Dashboard: `Dashboard`, `Savings`, `Transactions`, `More`
+- Use AppBar back buttons for child sub-flows
 
 ### Currency
 - Always display as `₦` with thousand separators (e.g. ₦850,000)
