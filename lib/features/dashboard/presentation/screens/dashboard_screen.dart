@@ -49,7 +49,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         color: AppColors.primary,
         onRefresh: () async {
           await Future.wait([
-            ref.read(savingsNotifierProvider.notifier).load(),
+            ref.read(savingsNotifierProvider.notifier).load(force: true),
             ref.read(tipsNotifierProvider.notifier).load(),
           ]);
         },

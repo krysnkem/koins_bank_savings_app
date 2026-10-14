@@ -22,10 +22,13 @@ class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
   @override
   void initState() {
     super.initState();
-    // Delay loading data until the screen is mounted and visible
+    // Only load if not already loaded by the dashboard or previous screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(savingsNotifierProvider.notifier).load();
+        final current = ref.read(savingsNotifierProvider);
+        if (current is! SavingsLoaded) {
+          ref.read(savingsNotifierProvider.notifier).load();
+        }
       }
     });
   }
@@ -52,7 +55,8 @@ class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
       ),
       body: RefreshIndicator(
         color: AppColors.primary,
-        onRefresh: () => ref.read(savingsNotifierProvider.notifier).load(),
+        onRefresh: () =>
+            ref.read(savingsNotifierProvider.notifier).load(force: true),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 350),
           child: state is SavingsLoading

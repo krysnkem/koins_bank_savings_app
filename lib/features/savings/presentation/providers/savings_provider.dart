@@ -53,7 +53,10 @@ class SavingsNotifier extends Notifier<SavingsState> {
     return const SavingsInitial();
   }
 
-  Future<void> load() async {
+  Future<void> load({bool force = false}) async {
+    if (!force && state is SavingsLoaded) {
+      return;
+    }
     state = const SavingsLoading();
     try {
       final plans = await _repository.getPlans();
