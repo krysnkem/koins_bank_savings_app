@@ -100,12 +100,22 @@ class SqfliteDatabaseService implements DatabaseService {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getFinancialTips() async {
+  Future<List<Map<String, dynamic>>> getPosts() async {
     final db = await _db;
     return db.query(
-      'financial_tips',
+      'dummy_posts',
       orderBy: 'id ASC',
       limit: 5,
+    );
+  }
+
+  @override
+  Future<void> insertPost(Map<String, dynamic> post) async {
+    final db = await _db;
+    await db.insert(
+      'dummy_posts',
+      post,
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 

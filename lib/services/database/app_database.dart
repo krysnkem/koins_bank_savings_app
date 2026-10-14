@@ -4,7 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Database manager for Koins Savings App.
-/// Manages SQLite tables: users, savings_products, savings_plans, transactions, and financial_tips.
+/// Manages SQLite tables: users, savings_products, savings_plans, transactions, and dummy_posts.
 /// Specifically scoped to manage the user account: test@bank.com.
 class AppDatabase {
   AppDatabase({Database? db}) : _db = db;
@@ -142,12 +142,12 @@ class AppDatabase {
     ''');
 
     await db.execute('''
-      CREATE TABLE financial_tips (
+      CREATE TABLE dummy_posts (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         body TEXT NOT NULL,
-        category TEXT NOT NULL,
-        icon_key TEXT NOT NULL
+        tags TEXT NOT NULL,
+        views INTEGER NOT NULL DEFAULT 0
       );
     ''');
   }
@@ -321,32 +321,32 @@ class AppDatabase {
       await db.insert('transactions', tx);
     }
 
-    // 5. Seed financial tips
-    final tips = [
+    // 5. Seed dummy posts
+    final posts = [
       {
-        'id': 'tip_1',
-        'title': 'Pay Yourself First',
-        'body': 'Before budgeting for discretionary spending, automatically route 10–20% of your earnings into high-yield savings.',
-        'category': 'Budgeting',
-        'icon_key': 'lightbulb',
+        'id': '1',
+        'title': 'His mother had always taught him',
+        'body': 'His mother had always taught him not to ever think of himself as better than others. He had tried to live by this motto.',
+        'tags': 'history,american,crime',
+        'views': 305,
       },
       {
-        'id': 'tip_2',
-        'title': 'Compound Interest Acceleration',
-        'body': 'Locking funds into fixed deposits allows compound interest to generate recurring yield safely over time.',
-        'category': 'Investing',
-        'icon_key': 'track_changes',
+        'id': '2',
+        'title': 'He was an expert but not in a discipline',
+        'body': 'He was an expert but not in a discipline that anyone could fully appreciate. He knew how to hold the cone just right.',
+        'tags': 'french,fiction,english',
+        'views': 4884,
       },
       {
-        'id': 'tip_3',
-        'title': 'Three-Month Safety Net',
-        'body': 'Keep at least 3 months of basic living expenses liquid in your emergency fund for total peace of mind.',
-        'category': 'Emergency Fund',
-        'icon_key': 'savings',
+        'id': '3',
+        'title': 'Dave watched as the forest burned up on the hill.',
+        'body': 'Dave watched as the forest burned up on the hill, only a few miles from her house. The car had been hastily packed.',
+        'tags': 'magical,history,french',
+        'views': 4152,
       },
     ];
-    for (final tip in tips) {
-      await db.insert('financial_tips', tip);
+    for (final post in posts) {
+      await db.insert('dummy_posts', post);
     }
   }
 

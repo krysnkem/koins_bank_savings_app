@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:koins_savings_app/core/constants/latency_constants.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/widgets/dashboard_header_section.dart';
+import 'package:koins_savings_app/features/dashboard/presentation/widgets/dashboard_posts_section.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/widgets/dashboard_quick_actions_section.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/widgets/dashboard_recent_savings_section.dart';
-import 'package:koins_savings_app/features/dashboard/presentation/widgets/dashboard_tips_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -38,7 +38,7 @@ void main() {
     expect(find.byType(DashboardHeaderSection), findsOneWidget);
     expect(find.byType(DashboardQuickActionsSection), findsOneWidget);
     expect(find.byType(DashboardRecentSavingsSection), findsOneWidget);
-    expect(find.byType(DashboardTipsSection), findsOneWidget);
+    expect(find.byType(DashboardPostsSection), findsOneWidget);
 
     // Verify header content
     expect(find.text('Dashboard'), findsOneWidget);
@@ -52,8 +52,8 @@ void main() {
     expect(find.text('Recent Savings'), findsOneWidget);
     expect(find.text('View All'), findsOneWidget);
 
-    // Verify financial tips section
-    expect(find.text('Financial Tips'), findsOneWidget);
+    // Verify posts from dummy json section
+    expect(find.text('Posts from Dummy JSON'), findsOneWidget);
   });
 
   testWidgets('DashboardScreen renders immediately without global screen spinner on initial mount', (tester) async {
@@ -79,7 +79,7 @@ void main() {
     expect(find.byType(DashboardHeaderSection), findsOneWidget);
     expect(find.byType(DashboardQuickActionsSection), findsOneWidget);
     expect(find.byType(DashboardRecentSavingsSection), findsOneWidget);
-    expect(find.byType(DashboardTipsSection), findsOneWidget);
+    expect(find.byType(DashboardPostsSection), findsOneWidget);
 
     // No global full-screen CircularProgressIndicator
     expect(find.byKey(const ValueKey('dashboard_loading')), findsNothing);

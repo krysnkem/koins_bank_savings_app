@@ -5,6 +5,7 @@ import 'package:http/testing.dart';
 import 'package:koins_savings_app/core/constants/app_constants.dart';
 import 'package:koins_savings_app/core/errors/app_exception.dart';
 import 'package:koins_savings_app/features/auth/data/models/auth_user.dart';
+import 'package:koins_savings_app/features/dashboard/data/models/dummy_post.dart';
 import 'package:koins_savings_app/features/products/data/models/savings_product.dart';
 import 'package:koins_savings_app/features/savings/data/models/savings_plan.dart';
 import 'package:koins_savings_app/services/mock_backend_service.dart';
@@ -168,8 +169,8 @@ void main() {
     });
   });
 
-  group('MockBackendService.getFinancialTips', () {
-    test('returns remote tips from DummyJSON when API responds 200', () async {
+  group('MockBackendService.getPosts', () {
+    test('returns remote posts from DummyJSON when API responds 200', () async {
       final mockClient = MockClient((request) async {
         if (request.url.toString() == '${AppConstants.baseUrl}/posts?limit=3') {
           return http.Response(
@@ -179,6 +180,8 @@ void main() {
                   'id': 101,
                   'title': 'Invest in Index Funds',
                   'body': 'Diversified index funds lower long-term risk.',
+                  'tags': ['finance', 'investing'],
+                  'views': 450,
                 },
               ],
             }),
@@ -193,13 +196,15 @@ void main() {
         httpClient: mockClient,
       );
 
-      final tips = await customService.getFinancialTips();
-      expect(tips, isNotEmpty);
-      expect(tips.first.id, '101');
-      expect(tips.first.title, 'Invest in Index Funds');
+      final posts = await customService.getPosts();
+      expect(posts, isNotEmpty);
+      expect(posts.first, isA<DummyPost>());
+      expect(posts.first.id, 101);
+      expect(posts.first.title, 'Invest in Index Funds');
+      expect(posts.first.tags, contains('finance'));
     });
 
-    test('falls back gracefully to database tips when remote API fails', () async {
+    test('falls back gracefully to database posts when remote API fails', () async {
       final mockClient = MockClient((request) async {
         return http.Response('Internal Server Error', 500);
       });
@@ -209,16 +214,16 @@ void main() {
         httpClient: mockClient,
       );
 
-      final tips = await customService.getFinancialTips();
-      expect(tips, isNotEmpty);
-      expect(tips.first.id, startsWith('tip'));
+      final posts = await customService.getPosts();
+      expect(posts, isNotEmpty);
+      expect(posts.first.id, isA<int>());
     });
 
     test('throws NetworkException when offline', () async {
       networkChecker.isOnline = false;
 
       expect(
-        () => service.getFinancialTips(),
+        () => service.getPosts(),
         throwsA(isA<NetworkException>()),
       );
     });

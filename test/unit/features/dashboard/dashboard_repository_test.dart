@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:koins_savings_app/core/errors/app_exception.dart';
-import 'package:koins_savings_app/features/dashboard/data/models/financial_tip.dart';
+import 'package:koins_savings_app/features/dashboard/data/models/dummy_post.dart';
 import 'package:koins_savings_app/features/dashboard/data/repositories/dashboard_repository.dart';
-import 'package:koins_savings_app/features/dashboard/data/repositories/tips_repository.dart';
+import 'package:koins_savings_app/features/dashboard/data/repositories/posts_repository.dart';
 import 'package:koins_savings_app/features/savings/data/models/savings_plan.dart';
 import 'package:koins_savings_app/features/savings/data/repositories/savings_repository.dart';
 
@@ -77,56 +77,58 @@ class FakeSavingsRepository implements SavingsRepository {
   }
 }
 
-class FakeTipsRepository implements TipsRepository {
+class FakePostsRepository implements PostsRepository {
   bool shouldFail = false;
-  List<FinancialTip> tips = const [
-    FinancialTip(
-      id: 'tip-1',
-      title: 'Pay Yourself First',
-      body: 'Always save before you spend.',
+  List<DummyPost> posts = const [
+    DummyPost(
+      id: 1,
+      title: 'His mother had always taught him',
+      body: 'His mother had always taught him not to ever think of himself as better than others.',
+      tags: ['history'],
+      views: 305,
     ),
   ];
 
   @override
-  Future<List<FinancialTip>> getTips() async {
-    if (shouldFail) throw const NetworkException('Failed to load tips');
-    return tips;
+  Future<List<DummyPost>> getPosts() async {
+    if (shouldFail) throw const NetworkException('Failed to load posts');
+    return posts;
   }
 }
 
 void main() {
   late FakeSavingsRepository savingsRepo;
-  late FakeTipsRepository tipsRepo;
+  late FakePostsRepository postsRepo;
   late DashboardRepository dashboardRepo;
 
   setUp(() {
     savingsRepo = FakeSavingsRepository();
-    tipsRepo = FakeTipsRepository();
+    postsRepo = FakePostsRepository();
     dashboardRepo = DashboardRepositoryImpl(
       savingsRepository: savingsRepo,
-      tipsRepository: tipsRepo,
+      postsRepository: postsRepo,
     );
   });
 
   group('DashboardRepository.getDashboardData', () {
-    test('aggregates savings and tips with total calculated and top 3 plans', () async {
+    test('aggregates savings and posts with total calculated and top 3 plans', () async {
       final data = await dashboardRepo.getDashboardData();
 
       expect(data.totalSavings, 460000.0); // 150000 + 250000 + 50000 + 10000
       expect(data.recentPlans.length, 3); // capped at 3
       expect(data.recentPlans.first.name, 'Emergency');
-      expect(data.tips.length, 1);
-      expect(data.tips.first.title, 'Pay Yourself First');
+      expect(data.posts.length, 1);
+      expect(data.posts.first.title, 'His mother had always taught him');
     });
 
-    test('recovers gracefully with empty tips if tipsRepo throws', () async {
-      tipsRepo.shouldFail = true;
+    test('recovers gracefully with empty posts if postsRepo throws', () async {
+      postsRepo.shouldFail = true;
 
       final data = await dashboardRepo.getDashboardData();
 
       expect(data.totalSavings, 460000.0);
       expect(data.recentPlans.length, 3);
-      expect(data.tips, isEmpty);
+      expect(data.posts, isEmpty);
     });
 
     test('throws exception if savingsRepo fails', () async {

@@ -2,18 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../savings/data/models/savings_plan.dart';
 import '../../../savings/data/repositories/savings_repository.dart';
-import '../models/financial_tip.dart';
-import 'tips_repository.dart';
+import '../models/dummy_post.dart';
+import 'posts_repository.dart';
 
 class DashboardData {
   final double totalSavings;
   final List<SavingsPlan> recentPlans;
-  final List<FinancialTip> tips;
+  final List<DummyPost> posts;
 
   const DashboardData({
     required this.totalSavings,
     required this.recentPlans,
-    required this.tips,
+    required this.posts,
   });
 }
 
@@ -24,22 +24,22 @@ abstract class DashboardRepository {
 class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl({
     required SavingsRepository savingsRepository,
-    required TipsRepository tipsRepository,
+    required PostsRepository postsRepository,
   })  : _savingsRepository = savingsRepository,
-        _tipsRepository = tipsRepository;
+        _postsRepository = postsRepository;
 
   final SavingsRepository _savingsRepository;
-  final TipsRepository _tipsRepository;
+  final PostsRepository _postsRepository;
 
   @override
   Future<DashboardData> getDashboardData() async {
     final results = await Future.wait([
       _savingsRepository.getPlans(),
-      _tipsRepository.getTips().catchError((_) => <FinancialTip>[]),
+      _postsRepository.getPosts().catchError((_) => <DummyPost>[]),
     ]);
 
     final allPlans = results[0] as List<SavingsPlan>;
-    final tips = results[1] as List<FinancialTip>;
+    final posts = results[1] as List<DummyPost>;
     final totalSavings = allPlans.fold<double>(
       0.0,
       (sum, p) => sum + p.amount,
@@ -48,7 +48,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
     return DashboardData(
       totalSavings: totalSavings,
       recentPlans: allPlans.take(3).toList(),
-      tips: tips,
+      posts: posts,
     );
   }
 }
@@ -56,6 +56,6 @@ class DashboardRepositoryImpl implements DashboardRepository {
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
   return DashboardRepositoryImpl(
     savingsRepository: ref.watch(savingsRepositoryProvider),
-    tipsRepository: ref.watch(tipsRepositoryProvider),
+    postsRepository: ref.watch(postsRepositoryProvider),
   );
 });

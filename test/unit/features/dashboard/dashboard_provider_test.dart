@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:koins_savings_app/core/errors/app_exception.dart';
-import 'package:koins_savings_app/features/dashboard/data/models/financial_tip.dart';
+import 'package:koins_savings_app/features/dashboard/data/models/dummy_post.dart';
 import 'package:koins_savings_app/features/dashboard/data/repositories/dashboard_repository.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:koins_savings_app/features/savings/data/models/savings_plan.dart';
@@ -24,11 +24,13 @@ class MockDashboardRepository implements DashboardRepository {
         createdAt: DateTime(2025, 1, 1),
       ),
     ],
-    tips: const [
-      FinancialTip(
-        id: 'tip-1',
-        title: 'Save early',
-        body: 'Compound interest is powerful.',
+    posts: const [
+      DummyPost(
+        id: 1,
+        title: 'His mother had always taught him',
+        body: 'His mother had always taught him not to ever think of himself as better than others.',
+        tags: ['history'],
+        views: 305,
       ),
     ],
   );
@@ -79,7 +81,8 @@ void main() {
       final loaded = states[1] as DashboardLoaded;
       expect(loaded.totalSavings, 500000.0);
       expect(loaded.recentPlans.length, 1);
-      expect(loaded.tips.length, 1);
+      expect(loaded.posts.length, 1);
+      expect(loaded.posts.first.title, 'His mother had always taught him');
     });
 
     test('load transitions to DashboardLoading then DashboardError on failure', () async {

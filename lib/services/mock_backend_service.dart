@@ -6,7 +6,7 @@ import '../core/constants/latency_constants.dart';
 import '../core/errors/app_exception.dart';
 import '../core/network/network_checker.dart';
 import '../features/auth/data/models/auth_user.dart';
-import '../features/dashboard/data/models/financial_tip.dart';
+import '../features/dashboard/data/models/dummy_post.dart';
 import '../features/dashboard/data/models/transaction_item.dart';
 import '../features/products/data/models/savings_product.dart';
 import '../features/savings/data/models/savings_plan.dart';
@@ -199,7 +199,7 @@ class MockBackendService implements BackendService {
   }
 
   @override
-  Future<List<FinancialTip>> getFinancialTips() async {
+  Future<List<DummyPost>> getPosts() async {
     await _ensureOnline();
 
     // 1. Live Public REST API Call (DummyJSON posts endpoint)
@@ -211,13 +211,17 @@ class MockBackendService implements BackendService {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
         final posts = (data['posts'] as List).cast<Map<String, dynamic>>();
         if (posts.isNotEmpty) {
-          return posts.map((p) {
-            return FinancialTip(
-              id: p['id'].toString(),
-              title: p['title']?.toString() ?? 'Financial Tip',
-              body: p['body']?.toString() ?? '',
-            );
-          }).toList();
+          final mappedPosts = posts.map(DummyPost.fromJson).toList();
+          for (final post in mappedPosts) {
+            await _databaseService.insertPost({
+              'id': post.id.toString(),
+              'title': post.title,
+              'body': post.body,
+              'tags': post.tags.join(','),
+              'views': post.views,
+            });
+          }
+          return mappedPosts;
         }
       }
     } catch (_) {
@@ -226,12 +230,15 @@ class MockBackendService implements BackendService {
 
     // 2. Local Database Fallback (SQLite table)
     await _simulateLatency();
-    final rows = await _databaseService.getFinancialTips();
+    final rows = await _databaseService.getPosts();
     return rows.map((r) {
-      return FinancialTip(
-        id: r['id'].toString(),
-        title: r['title']?.toString() ?? 'Financial Tip',
+      final tagsStr = r['tags']?.toString() ?? '';
+      return DummyPost(
+        id: int.tryParse(r['id'].toString()) ?? 1,
+        title: r['title']?.toString() ?? '',
         body: r['body']?.toString() ?? '',
+        tags: tagsStr.isNotEmpty ? tagsStr.split(',') : const [],
+        views: r['views'] is int ? r['views'] as int : 0,
       );
     }).toList();
   }

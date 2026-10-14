@@ -64,7 +64,7 @@ lib/
 │   │   ├── data/              # Auth models, datasources, and repository
 │   │   └── presentation/      # LoginScreen, ProfileScreen
 │   ├── dashboard/             # Financial dashboard domain
-│   │   ├── data/              # FinancialTip model, tips datasource, repository
+│   │   ├── data/              # DummyPost model, posts datasource, repository
 │   │   └── presentation/      # DashboardScreen, widgets, providers
 │   ├── products/              # Savings Products domain
 │   │   ├── data/              # SavingsProduct model, datasource, repository
@@ -159,11 +159,11 @@ Abstracted Database Service (DatabaseService)
        │
        ▼
 Concrete SQLite Implementation (SqfliteDatabaseService -> AppDatabase)
-  [Tables: users, savings_products, savings_plans, transactions, financial_tips]
+  [Tables: users, savings_products, savings_plans, transactions, dummy_posts]
 ```
 
 - **`DatabaseService` Interface (`lib/services/database/database_service.dart`)**:
-  Defines asynchronous contracts for users, products, savings plans, transactions, and tips. Higher layers never execute raw SQL statements directly.
+  Defines asynchronous contracts for users, products, savings plans, transactions, and posts. Higher layers never execute raw SQL statements directly.
 - **`SqfliteDatabaseService` (`lib/services/database/sqflite_database_service.dart`)**:
   Implements `DatabaseService` using parameterized SQL queries and typed schema mappings.
 - **`MockBackendService` (`lib/services/mock_backend_service.dart`)**:
@@ -233,22 +233,22 @@ Stores transaction ledger records (deposits, yields, creations).
 | `icon_key` | `TEXT` | `NOT NULL` | Icon identifier for visual presentation |
 | `created_at` | `TEXT` | `NOT NULL` | ISO 8601 timestamp |
 
-#### 5. `financial_tips` Table
-Stores personalized financial tips and advisory insights displayed on the dashboard.
+#### 5. `dummy_posts` Table
+Stores fallback and cached posts from the public DummyJSON REST API (`https://dummyjson.com/posts`) displayed under the **"Posts from Dummy JSON"** dashboard section.
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `TEXT` | `PRIMARY KEY` | Tip identifier (`tip_1`, `tip_2`, `tip_3`) |
-| `title` | `TEXT` | `NOT NULL` | Tip title (e.g. *Pay Yourself First*) |
-| `body` | `TEXT` | `NOT NULL` | Financial advice text |
-| `category` | `TEXT` | `NOT NULL` | Category tag (e.g. *Budgeting*, *Investing*) |
-| `icon_key` | `TEXT` | `NOT NULL` | Icon key identifier |
+| `id` | `TEXT` | `PRIMARY KEY` | Post identifier (`1`, `2`, `3`) |
+| `title` | `TEXT` | `NOT NULL` | Post title |
+| `body` | `TEXT` | `NOT NULL` | Post content snippet |
+| `tags` | `TEXT` | `NULLABLE` | Comma-delimited list of tags |
+| `views` | `INTEGER` | `NOT NULL DEFAULT 0` | View count |
 
 ---
 
 ## REST API Integration
 
-- **Endpoint**: Integrates with the public REST API (`https://dummyjson.com/posts`) to dynamically retrieve and display **Financial Insights & Tips** on the Dashboard.
-- **Resilience**: Implements full loading shimmers, network timeout handling, and user-friendly error banners with one-tap retry functionality.
+- **Endpoint**: Integrates with the public REST API (`https://dummyjson.com/posts?limit=3`) to dynamically retrieve and display live **Posts from Dummy JSON** on the Dashboard.
+- **Resilience**: Implements full loading shimmers, network timeout handling, automatic SQLite local caching fallback, and user-friendly error banners with one-tap retry functionality.
 
 ---
 

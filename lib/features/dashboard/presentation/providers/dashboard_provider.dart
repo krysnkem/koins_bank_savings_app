@@ -5,7 +5,7 @@ import '../../data/repositories/dashboard_repository.dart';
 import 'dashboard_state.dart';
 
 export 'dashboard_state.dart';
-export 'tips_provider.dart';
+export 'posts_provider.dart';
 
 final dashboardNotifierProvider =
     NotifierProvider.autoDispose<DashboardNotifier, DashboardState>(
@@ -28,7 +28,7 @@ class DashboardNotifier extends AutoDisposeNotifier<DashboardState> {
       state = DashboardLoaded(
         totalSavings: data.totalSavings,
         recentPlans: data.recentPlans,
-        tips: data.tips,
+        posts: data.posts,
       );
     } catch (e) {
       if (e is AppException) {

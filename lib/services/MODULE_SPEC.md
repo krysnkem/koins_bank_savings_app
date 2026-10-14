@@ -226,26 +226,18 @@ Future<SavingsPlan> createSavingsPlan({
 
 ---
 
-## 5. Financial Tips (Real API Integration)
+## 5. DummyJSON Posts (Real API Integration)
 
 ```dart
-Future<List<FinancialTip>> getFinancialTips()
+Future<List<DummyPost>> getPosts()
 ```
 
 **Behaviour**
 
 1. `await _ensureOnline()`
-2. `await _simulateLatency(400)` (shorter because real network is involved)
-3. GET `https://dummyjson.com/posts?limit=5`
-4. Map the first 3 posts into:
-   ```dart
-   FinancialTip(
-     id: post['id'].toString(),
-     title: post['title'],
-     body: post['body'],
-   )
-   ```
-5. On any HTTP status ≠ 200 or parsing error → throw `ServerException`
+2. GET `https://dummyjson.com/posts?limit=3`
+3. Parse into `DummyPost` model instances and cache into SQLite (`dummy_posts` table)
+4. Graceful fallback to `DatabaseService.getPosts()` on HTTP failure or timeout
 
 This is the **required** real REST API call demanded by the assessment.
 
@@ -258,7 +250,7 @@ This is the **required** real REST API call demanded by the assessment.
 | No connectivity **or** `forceOffline`  | `NetworkException`                 |
 | Wrong login credentials                | `AuthException`                    |
 | Product / Plan not found               | `ServerException`                  |
-| HTTP / parsing failure (tips)          | `ServerException`                  |
+| Database query failure                 | `ServerException`                  |
 | Any unexpected error                   | `ServerException`                  |
 
 ---
@@ -267,7 +259,7 @@ This is the **required** real REST API call demanded by the assessment.
 
 - Registered once as a Riverpod `Provider`:
   ```dart
-  final mockBackendServiceProvider = Provider<MockBackendService>((ref) {
+  final mockBackendServiceProvider = Provider<BackendService>((ref) {
     return MockBackendService();
   });
   ```
@@ -278,14 +270,14 @@ This is the **required** real REST API call demanded by the assessment.
 
 ## 8. Acceptance Criteria
 
-- [ ] Every public method checks real connectivity first (`connectivity_plus`)
-- [ ] Setting `forceOffline = true` makes every call throw `NetworkException`
-- [ ] Login succeeds **only** with `test@bank.com` / `Password123`
-- [ ] `getSavingsProducts()` always returns the 4 hardcoded products
-- [ ] `createSavingsPlan()` adds the plan to the in-memory list and returns it
-- [ ] `getFinancialTips()` performs a real HTTP call to dummyjson
-- [ ] All methods have realistic latency (400–900 ms)
-- [ ] Service is easily mockable in unit tests via constructor injection of `NetworkChecker` and `http.Client`
+- [x] Every public method checks real connectivity first (`connectivity_plus`)
+- [x] Setting `forceOffline = true` makes every call throw `NetworkException`
+- [x] Login succeeds **only** with `test@bank.com` / `Password123`
+- [x] `getSavingsProducts()` returns products from database/in-memory
+- [x] `createSavingsPlan()` adds the plan to database and returns it
+- [x] `getPosts()` performs a real HTTP call to dummyjson with SQLite fallback
+- [x] All methods have realistic latency (400–900 ms)
+- [x] Service is easily mockable in unit tests via constructor injection of `NetworkChecker` and `http.Client`
 
 ---
 

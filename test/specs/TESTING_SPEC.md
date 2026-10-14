@@ -78,7 +78,7 @@ test/
 | `getProductById` with valid id                 | Returns the product                      |
 | `getProductById` with invalid id               | Throws `ServerException`                 |
 | `createSavingsPlan`                            | Returns plan and adds it to in-memory list |
-| `getFinancialTips` (mocked HTTP)               | Returns mapped tips                      |
+| `getPosts` (mocked HTTP)                       | Returns mapped posts                     |
 | Any method when offline                        | Throws `NetworkException`                |
 
 > Use constructor injection of a fake `NetworkChecker` and a fake `http.Client`.

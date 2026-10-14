@@ -1,5 +1,5 @@
 import '../../../savings/data/models/savings_plan.dart';
-import '../../data/models/financial_tip.dart';
+import '../../data/models/dummy_post.dart';
 
 sealed class DashboardState {
   const DashboardState();
@@ -16,12 +16,12 @@ class DashboardLoading extends DashboardState {
 class DashboardLoaded extends DashboardState {
   final double totalSavings;
   final List<SavingsPlan> recentPlans;
-  final List<FinancialTip> tips;
+  final List<DummyPost> posts;
 
   const DashboardLoaded({
     required this.totalSavings,
     required this.recentPlans,
-    required this.tips,
+    required this.posts,
   });
 }
 

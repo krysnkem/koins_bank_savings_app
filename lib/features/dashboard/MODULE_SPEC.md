@@ -10,17 +10,25 @@
 lib/features/dashboard/
 ├── data/
 │   ├── models/
-│   │   └── financial_tip.dart
+│   │   └── dummy_post.dart
 │   ├── datasources/
-│   │   └── tips_data_source.dart
+│   │   └── posts_remote_data_source.dart
 │   └── repositories/
+│       ├── posts_repository.dart
 │       └── dashboard_repository.dart
 ├── presentation/
 │   ├── providers/
+│   │   ├── posts_state.dart
+│   │   ├── posts_provider.dart
+│   │   ├── dashboard_state.dart
 │   │   └── dashboard_provider.dart
 │   ├── screens/
 │   │   └── dashboard_screen.dart
 │   └── widgets/
+│       ├── dashboard_header_section.dart
+│       ├── dashboard_quick_actions_section.dart
+│       ├── dashboard_recent_savings_section.dart
+│       └── dashboard_posts_section.dart
 └── dashboard.dart                         # barrel file
 ```
 
@@ -34,90 +42,56 @@ lib/features/auth/      (for user name)
 
 ---
 
-## 1. FinancialTip Model
+## 1. DummyPost Model
 
-**File**: `data/models/financial_tip.dart`
+**File**: `data/models/dummy_post.dart`
 
 ```dart
-class FinancialTip {
-  final String id;
+class DummyPost {
+  final int id;
   final String title;
   final String body;
+  final List<String> tags;
+  final int views;
 }
 ```
 
 ---
 
-## 2. MockBackendService (Tips portion)
+## 2. MockBackendService (DummyJSON Posts portion)
 
 ```dart
-Future<List<FinancialTip>> getFinancialTips()
+Future<List<DummyPost>> getPosts()
 ```
 
 **Behaviour**
 1. If `!isNetworkAvailable` → throw `NetworkException`
-2. Artificial delay (~800ms)
-3. Return 2–3 tips (can be hardcoded mock or mapped from dummyjson posts)
-
-**Example tips**
-- “Start small, stay consistent”
-- “Emergency funds give you peace of mind”
-- “Pay yourself first every month”
+2. Fetch live data from `https://dummyjson.com/posts?limit=3`
+3. Fall back to local SQLite table (`dummy_posts`) if remote call fails or offline
 
 ---
 
-## 3. Tips + dashboard repository
+## 3. Posts + Dashboard Repository
 
-- Abstract `TipsRemoteDataSource` / concrete `TipsRemoteDataSourceImpl(BackendService)`.
-- Abstract `TipsRepository` / concrete `TipsRepositoryImpl(TipsRemoteDataSource)`.
-- Abstract `DashboardRepository` / concrete `DashboardRepositoryImpl(SavingsRepository, TipsRepository)`.
-- `TipsNotifier` consumes `TipsRepository`.
-- `DashboardNotifier` consumes `DashboardRepository` which aggregates plans and tips into `DashboardData`.
-
+- Abstract `PostsRemoteDataSource` / concrete `PostsRemoteDataSourceImpl(BackendService)`.
+- Abstract `PostsRepository` / concrete `PostsRepositoryImpl(PostsRemoteDataSource)`.
+- Abstract `DashboardRepository` / concrete `DashboardRepositoryImpl(SavingsRepository, PostsRepository)`.
+- `PostsNotifier` consumes `PostsRepository`.
+- `DashboardNotifier` consumes `DashboardRepository` which aggregates plans and posts into `DashboardData`.
 
 ---
 
-## 4. DashboardProvider (Riverpod)
+## 4. Dashboard & Posts Providers (Riverpod)
 
-**File**: `presentation/providers/dashboard_provider.dart`
+**Files**:
+- `presentation/providers/posts_state.dart`
+- `presentation/providers/posts_provider.dart`
+- `presentation/providers/dashboard_state.dart`
+- `presentation/providers/dashboard_provider.dart`
 
-### DashboardState (Sealed Classes)
-
-```dart
-sealed class DashboardState {
-  const DashboardState();
-}
-
-class DashboardInitial extends DashboardState {
-  const DashboardInitial();
-}
-
-class DashboardLoading extends DashboardState {
-  const DashboardLoading();
-}
-
-class DashboardLoaded extends DashboardState {
-  final List<SavingsPlan> recentPlans;
-  final List<FinancialTip> tips;
-  const DashboardLoaded({
-    required this.recentPlans,
-    required this.tips,
-  });
-}
-
-class DashboardError extends DashboardState {
-  final String message;
-  const DashboardError(this.message);
-}
-```
-
-### Methods
-- `loadDashboard()`
-
-**Behaviour**
-- Emit `DashboardLoading`
-- Fetch recent plans + tips in parallel
-- Emit `DashboardLoaded` or `DashboardError`
+### Sealed Classes for State
+- `PostsState`: `PostsInitial`, `PostsLoading`, `PostsLoaded(posts)`, `PostsError(message)`
+- `DashboardState`: `DashboardInitial`, `DashboardLoading`, `DashboardLoaded(recentPlans, posts)`, `DashboardError(message)`
 
 ---
 
@@ -126,50 +100,19 @@ class DashboardError extends DashboardState {
 **File**: `presentation/screens/dashboard_screen.dart`
 
 **UI Hierarchy**
-1. AppBar: “Dashboard” (optional logo / profile icon)
-2. Greeting: “Good Morning, John Doe” (time-based + user name from Auth)
-3. Total Savings card
-   - Label: “Total Savings”
-   - Value: ₦850,000 (static for now)
-4. Quick Actions row (with icons)
-   - Create Savings
-   - View Products
-5. Section: “Recent Savings”
-   - Up to 3 plan cards (name, amount, frequency)
-6. Section: “Financial Tips”
-   - 2–3 tip cards (title + body)
-7. Bottom safe area
-
-**Interactions**
-- Create Savings → CreateSavingsScreen
-- View Products → ProductsScreen
-- Profile icon (optional) → ProfileScreen
-
-**States**
-- Loading (full screen or section-level)
-- Loaded
-- Error on tips section (can still show the rest of the dashboard)
-- Empty recent savings
+1. DashboardHeaderSection: Greeting + Total Savings Card
+2. DashboardQuickActionsSection: Create Savings, View Products
+3. DashboardRecentSavingsSection: Up to 3 recent savings plan cards
+4. DashboardPostsSection: "Posts from Dummy JSON" section with REST API tag badge, 3 post cards with tags and view counts
 
 ---
 
 ## 6. Acceptance Criteria
 
-- [ ] Greeting shows correct time of day + user name
-- [ ] Total Savings displays ₦850,000
-- [ ] Quick actions navigate correctly
-- [ ] Recent Savings shows up to 3 plans
-- [ ] Financial Tips load from backend
-- [ ] Offline → tips section shows error (rest of UI still usable)
-- [ ] Loading state works
-
----
-
-## Implementation Order
-
-1. `FinancialTip` model
-2. `MockBackendService.getFinancialTips()`
-3. Data source + repository
-4. `DashboardProvider`
-5. `DashboardScreen` + supporting widgets
-6. Barrel file
+- [x] Greeting shows correct time of day + user name
+- [x] Total Savings displays ₦850,000 with animated counter
+- [x] Quick actions navigate correctly
+- [x] Recent Savings shows up to 3 plans
+- [x] Posts from Dummy JSON load from live REST API / SQLite fallback
+- [x] Offline → posts section shows error/retry (rest of UI still usable)
+- [x] Independent loading shimmer states
