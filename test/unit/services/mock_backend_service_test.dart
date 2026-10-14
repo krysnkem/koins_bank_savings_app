@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:koins_savings_app/core/constants/app_constants.dart';
 import 'package:koins_savings_app/core/errors/app_exception.dart';
 import 'package:koins_savings_app/features/auth/data/models/auth_user.dart';
@@ -166,22 +169,58 @@ void main() {
   });
 
   group('MockBackendService.getFinancialTips', () {
-    test(
-      'returns a non-empty list of tips when online',
-      () async {
-        // This will call the real dummyjson endpoint (or fail if no network).
-        // In CI we can inject a fake http.Client later.
-        try {
-          final tips = await service.getFinancialTips();
-          expect(tips, isNotEmpty);
-        } on NetworkException {
-          // Acceptable in offline environments
-        } on ServerException {
-          // Acceptable if the external API is down
+    test('returns remote tips from DummyJSON when API responds 200', () async {
+      final mockClient = MockClient((request) async {
+        if (request.url.toString() == '${AppConstants.baseUrl}/posts?limit=3') {
+          return http.Response(
+            jsonEncode({
+              'posts': [
+                {
+                  'id': 101,
+                  'title': 'Invest in Index Funds',
+                  'body': 'Diversified index funds lower long-term risk.',
+                },
+              ],
+            }),
+            200,
+          );
         }
-      },
-      skip:
-          'Requires network or injected http.Client – enable when backend is implemented',
-    );
+        return http.Response('Not found', 404);
+      });
+
+      final customService = MockBackendService(
+        networkChecker: networkChecker,
+        httpClient: mockClient,
+      );
+
+      final tips = await customService.getFinancialTips();
+      expect(tips, isNotEmpty);
+      expect(tips.first.id, '101');
+      expect(tips.first.title, 'Invest in Index Funds');
+    });
+
+    test('falls back gracefully to database tips when remote API fails', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response('Internal Server Error', 500);
+      });
+
+      final customService = MockBackendService(
+        networkChecker: networkChecker,
+        httpClient: mockClient,
+      );
+
+      final tips = await customService.getFinancialTips();
+      expect(tips, isNotEmpty);
+      expect(tips.first.id, startsWith('tip'));
+    });
+
+    test('throws NetworkException when offline', () async {
+      networkChecker.isOnline = false;
+
+      expect(
+        () => service.getFinancialTips(),
+        throwsA(isA<NetworkException>()),
+      );
+    });
   });
 }

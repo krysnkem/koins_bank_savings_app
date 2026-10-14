@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../core/constants/app_constants.dart';
 import '../core/constants/latency_constants.dart';
 import '../core/errors/app_exception.dart';
 import '../core/network/network_checker.dart';
@@ -12,18 +16,22 @@ import 'database/database_service.dart';
 import 'database/sqflite_database_service.dart';
 
 /// Simulates a real backend API by querying and persisting data via [DatabaseService],
-/// introducing configurable latency and network checking.
+/// introducing configurable latency and network checking, while executing live public
+/// REST API calls (DummyJSON) for real network data retrieval.
 class MockBackendService implements BackendService {
   MockBackendService({
     DatabaseService? databaseService,
     NetworkChecker? networkChecker,
+    http.Client? httpClient,
     Duration? latency,
   })  : _databaseService = databaseService ?? SqfliteDatabaseService(),
         _networkChecker = networkChecker ?? const NetworkCheckerImpl(),
+        _httpClient = httpClient ?? http.Client(),
         latency = latency ?? LatencyConstants.backend;
 
   final DatabaseService _databaseService;
   final NetworkChecker _networkChecker;
+  final http.Client _httpClient;
 
   Duration latency;
   bool forceOffline = false;
@@ -193,8 +201,31 @@ class MockBackendService implements BackendService {
   @override
   Future<List<FinancialTip>> getFinancialTips() async {
     await _ensureOnline();
-    await _simulateLatency();
 
+    // 1. Live Public REST API Call (DummyJSON posts endpoint)
+    try {
+      final uri = Uri.parse('${AppConstants.baseUrl}/posts?limit=3');
+      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 4));
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        final posts = (data['posts'] as List).cast<Map<String, dynamic>>();
+        if (posts.isNotEmpty) {
+          return posts.map((p) {
+            return FinancialTip(
+              id: p['id'].toString(),
+              title: p['title']?.toString() ?? 'Financial Tip',
+              body: p['body']?.toString() ?? '',
+            );
+          }).toList();
+        }
+      }
+    } catch (_) {
+      // Gracefully fall back to persisted database records when offline or if dummy API times out
+    }
+
+    // 2. Local Database Fallback (SQLite table)
+    await _simulateLatency();
     final rows = await _databaseService.getFinancialTips();
     return rows.map((r) {
       return FinancialTip(
