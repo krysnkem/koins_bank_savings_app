@@ -1,0 +1,168 @@
+﻿Flutter Developer Technical Assessment 
+Fintech Mobile Application 
+Duration: 6–8 Hours 
+Technology Stack 
+• Flutter (Latest Stable Version) 
+• Dart 
+• Git 
+• REST API 
+• Local Storage (SharedPreferences / Hive) 
+• Any state management solution (Provider, Riverpod, Bloc, GetX, etc.) 
+Scenario 
+You have been hired by a digital bank to build a simple savings application. 
+The application allows users to: 
+• Login 
+• View available savings plans 
+• View savings plan details 
+• Create a savings plan 
+• View their savings dashboard 
+The emphasis is on clean architecture, good UI, performance, and maintainable code rather than complex business  logic. 
+Functional Requirements 
+1. Login Screen 
+Design a login page containing: 
+• Email Address 
+• Password 
+• Login Button 
+• Forgot Password (non-functional) 
+• Register (non-functional) 
+Validation 
+• Email required 
+• Valid email format 
+• Password required 
+• Minimum 8 characters 
+On successful login, navigate to Dashboard. No authentication backend is required. Use mock authentication. Example Credentials
+Email: test@bank.com 
+Password: Password123 
+2. Dashboard 
+Display: 
+Greeting: Good Morning, John Doe 
+Total Savings: ₦850,000 
+Below this, display quick actions: 
+• Create Savings 
+• View Products 
+Recent Savings — show three mock savings plans. Example: 
+Plan: Emergency Fund 
+Amount: ₦120,000 
+Frequency: Monthly 
+3. Savings Products Screen 
+Display a list of savings products. Example: 
+Product 
+	Interest 
+	Duration
+	Target Savings 
+	12% 
+	12 Months
+	Fixed Deposit 
+	18% 
+	6 Months
+	Education Savings 
+	10% 
+	Flexible
+	Vacation Savings 
+	8% 
+	Flexible
+	
+
+
+
+Each card should display: 
+• Product Name 
+• Interest Rate 
+• Short Description 
+• Button: View Details 
+4. Savings Details Screen 
+Display: 
+Plan Name: Target Savings 
+Interest Rate: 12% 
+Minimum Deposit: ₦5,000 
+Duration: 12 Months 
+• Button: Create Savings 
+5. Create Savings Screen 
+Fields:
+• Savings Name 
+• Product Type (Dropdown) 
+• Target Amount 
+• Monthly Contribution 
+• Duration 
+• Button: Create 
+Validation 
+• All fields required. 
+On Success 
+• Show: "Savings Created Successfully" 
+• Return to Dashboard. 
+6. Profile Screen 
+Display: 
+• Full Name 
+• Email 
+• Phone Number 
+• Logout Button 
+Logout returns user to Login. 
+API Integration 
+Use any public mock API. Examples: 
+• https://jsonplaceholder.typicode.com/ 
+• https://dummyjson.com/ 
+• https://reqres.in/ 
+Retrieve at least one dataset and display it somewhere within the application. UI Requirements 
+The application should have: 
+• Material 3 
+• Responsive layout 
+• Proper spacing 
+• Consistent typography 
+• Icons 
+• Loading indicators 
+• Empty state 
+• Error state
+Architecture 
+Expected structure: 
+lib/ 
+├── core 
+├── models 
+├── services 
+├── repositories 
+├── screens 
+├── widgets 
+├── utils 
+├── providers 
+└── main.dart 
+State Management 
+Use any of: 
+• Provider 
+• Riverpod 
+• Bloc 
+• Cubit 
+• GetX 
+Explain your choice. Local Storage 
+Persist: 
+• Logged-in user 
+• Created savings plans Use: 
+• Hive 
+• SharedPreferences • SQLite 
+Error Handling 
+Handle: 
+• Empty fields 
+• API failures 
+• No internet (optional) • Unexpected exceptions 
+Bonus Features
+Implement any of the following: 
+• Biometrics 
+• PIN Login 
+• Pull to Refresh 
+• Search Savings Products 
+• Filter Products 
+• Animations 
+• Unit Tests 
+• Widget Tests 
+• Firebase Analytics 
+ Deliverables 
+Submit: 
+• GitHub Repository 
+• README 
+• APK 
+• Architecture explanation 
+• Screenshots 
+README should include: 
+• Setup instructions 
+• Flutter version 
+• Packages used 
+• Assumptions 
+• Improvements if given more time
