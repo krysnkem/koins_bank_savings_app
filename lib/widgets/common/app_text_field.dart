@@ -67,7 +67,7 @@ class AppTextField extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Flexible(child: suffix!),
+                  suffix!,
                   const SizedBox(width: AppSpacing.sm),
                 ],
               )
