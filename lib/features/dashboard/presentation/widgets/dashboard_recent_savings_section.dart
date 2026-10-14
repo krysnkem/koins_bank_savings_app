@@ -8,6 +8,7 @@ import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../widgets/common/empty_state.dart';
+import '../../../../widgets/common/fade_entry.dart';
 import '../../../savings/data/models/savings_plan.dart';
 import '../../../savings/presentation/providers/savings_provider.dart';
 
@@ -89,16 +90,17 @@ class DashboardRecentSavingsSection extends ConsumerWidget {
                       title: 'No savings plans yet',
                       subtitle: 'Create your first plan to get started',
                     )
-                  : AnimatedOpacity(
+                  : FadeEntry(
                       key: const ValueKey('recent_savings_loaded'),
-                      opacity: 1.0,
-                      duration: const Duration(milliseconds: 300),
                       child: Column(
                         children: [
                           for (int i = 0; i < plans.length; i++)
-                            _RecentSavingsCard(
-                              plan: plans[i],
-                              icon: _planIcons[i % _planIcons.length],
+                            FadeEntry.staggered(
+                              index: i,
+                              child: _RecentSavingsCard(
+                                plan: plans[i],
+                                icon: _planIcons[i % _planIcons.length],
+                              ),
                             ),
                         ],
                       ),

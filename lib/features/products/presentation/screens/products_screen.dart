@@ -6,6 +6,7 @@ import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../widgets/common/error_state.dart';
+import '../../../../widgets/common/fade_entry.dart';
 import '../providers/products_provider.dart';
 import '../widgets/product_card.dart';
 
@@ -49,21 +50,24 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               message: message,
               onRetry: () => ref.read(productsNotifierProvider.notifier).load(),
             ),
-          ProductsLoaded() => ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              itemCount: kProducts.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(height: AppSpacing.md),
-              itemBuilder: (context, index) {
-                final product = kProducts[index];
-                return ProductCard(
-                  product: product,
-                  onView: () {
-                    context.push('/product/${product.id}');
-                  },
-                );
-              },
+          ProductsLoaded() => FadeEntry(
+              key: const ValueKey('products_loaded'),
+              child: ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                itemCount: kProducts.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: AppSpacing.md),
+                itemBuilder: (context, index) {
+                  final product = kProducts[index];
+                  return ProductCard(
+                    product: product,
+                    onView: () {
+                      context.push('/product/${product.id}');
+                    },
+                  );
+                },
+              ),
             ),
         },
       ),

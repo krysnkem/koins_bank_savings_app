@@ -6,6 +6,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../widgets/common/error_state.dart';
+import '../../../../widgets/common/fade_entry.dart';
 import '../../data/models/financial_tip.dart';
 import '../providers/tips_provider.dart';
 
@@ -49,16 +50,17 @@ class DashboardTipsSection extends ConsumerWidget {
                 message: message,
                 onRetry: () => ref.read(tipsNotifierProvider.notifier).load(),
               ),
-            TipsLoaded(:final tips) => AnimatedOpacity(
+            TipsLoaded(:final tips) => FadeEntry(
                 key: const ValueKey('tips_loaded'),
-                opacity: 1.0,
-                duration: const Duration(milliseconds: 300),
                 child: Column(
                   children: [
                     for (int i = 0; i < tips.length; i++)
-                      _TipCard(
-                        tip: tips[i],
-                        icon: _tipIcons[i % _tipIcons.length],
+                      FadeEntry.staggered(
+                        index: i,
+                        child: _TipCard(
+                          tip: tips[i],
+                          icon: _tipIcons[i % _tipIcons.length],
+                        ),
                       ),
                   ],
                 ),

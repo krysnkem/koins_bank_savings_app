@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../widgets/common/fade_entry.dart';
 import '../../data/models/savings_plan.dart';
 import '../providers/savings_provider.dart';
 import '../widgets/active_savings_plans_section.dart';
@@ -59,11 +60,8 @@ class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
                   key: ValueKey('savings_loading'),
                   child: CircularProgressIndicator(color: AppColors.primary),
                 )
-              : AnimatedOpacity(
+              : FadeEntry(
                   key: const ValueKey('savings_loaded'),
-                  opacity: state is SavingsLoaded ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeOut,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(AppSpacing.screenPadding),
