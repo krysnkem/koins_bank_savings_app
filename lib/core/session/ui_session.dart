@@ -98,8 +98,11 @@ class UiSession {
   }
 }
 
-class UiSessionNotifier extends StateNotifier<UiSession> {
-  UiSessionNotifier() : super(const UiSession(loggedIn: false, plans: UiSession.seed));
+class UiSessionNotifier extends Notifier<UiSession> {
+  @override
+  UiSession build() {
+    return const UiSession(loggedIn: false, plans: UiSession.seed);
+  }
 
   /// EXPECTATION: AuthRepository.login → MockBackendService.login, then saveSession.
   Future<String?> login(String email, String password) async {
@@ -123,8 +126,8 @@ class UiSessionNotifier extends StateNotifier<UiSession> {
   }
 }
 
-final uiSessionProvider = StateNotifierProvider<UiSessionNotifier, UiSession>(
-  (ref) => UiSessionNotifier(),
+final uiSessionProvider = NotifierProvider<UiSessionNotifier, UiSession>(
+  UiSessionNotifier.new,
 );
 
 const kProducts = <UiProduct>[

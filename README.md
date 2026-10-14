@@ -119,7 +119,7 @@ The application implements declarative routing powered by **`go_router`** and Fl
 **Riverpod (`flutter_riverpod`)** was selected as the state management solution for the following architectural benefits:
 
 1. **Compile-Time Safety & Zero BuildContext Entanglement**: Providers can be declared globally and accessed safely without runtime `ProviderNotFoundException` or context lifecycle issues.
-2. **Immutable State Transitions**: Uses `StateNotifier` and immutable state models (`copyWith`), making state changes predictable and debuggable.
+2. **Immutable State Transitions**: Uses Riverpod 2.0+ `Notifier` and immutable state models (`copyWith`), making state changes predictable and debuggable.
 3. **Effortless Testability**: Providers and repositories can be overridden cleanly in unit and widget tests without spinning up a full widget tree.
 4. **Clean Async Data Handling**: Supports declarative loading, success, and error states for REST API calls and asynchronous storage operations.
 

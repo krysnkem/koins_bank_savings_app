@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../../services/mock_backend_service.dart';
 import '../../data/datasources/auth_local_data_source.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
@@ -40,16 +41,17 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 final authNotifierProvider =
-    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final repo = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repo);
-});
+    NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
 
 /// Concrete notifier. Depends on [AuthRepository], not [AuthRepositoryImpl].
-class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._repository) : super(const AuthInitial());
+class AuthNotifier extends Notifier<AuthState> {
+  late final AuthRepository _repository;
 
-  final AuthRepository _repository;
+  @override
+  AuthState build() {
+    _repository = ref.watch(authRepositoryProvider);
+    return const AuthInitial();
+  }
 
   Future<void> login(String email, String password) async {
     state = const AuthLoading();
@@ -57,7 +59,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _repository.login(email: email, password: password);
       state = AuthAuthenticated(user);
     } catch (e) {
-      state = AuthError(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) {
+        state = AuthError(e.message);
+      } else {
+        state = AuthError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+      }
     }
   }
 

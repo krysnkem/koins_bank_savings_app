@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../../services/mock_backend_service.dart';
 import '../../../savings/data/models/savings_plan.dart';
 import '../../../savings/data/repositories/savings_repository.dart';
@@ -38,25 +39,21 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
 });
 
 final dashboardNotifierProvider =
-    StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
-  final dashboardRepo = ref.watch(dashboardRepositoryProvider);
-  final savingsRepo = ref.watch(savingsRepositoryProvider);
-  return DashboardNotifier(
-    dashboardRepository: dashboardRepo,
-    savingsRepository: savingsRepo,
-  );
-});
+    NotifierProvider.autoDispose<DashboardNotifier, DashboardState>(
+  DashboardNotifier.new,
+);
 
-class DashboardNotifier extends StateNotifier<DashboardState> {
-  DashboardNotifier({
-    required DashboardRepository dashboardRepository,
-    required SavingsRepository savingsRepository,
-  })  : _dashboard = dashboardRepository,
-        _savings = savingsRepository,
-        super(const DashboardInitial());
+class DashboardNotifier extends AutoDisposeNotifier<DashboardState> {
+  late final DashboardRepository _dashboard;
+  late final SavingsRepository _savings;
 
-  final DashboardRepository _dashboard;
-  final SavingsRepository _savings;
+  @override
+  DashboardState build() {
+    _dashboard = ref.watch(dashboardRepositoryProvider);
+    _savings = ref.watch(savingsRepositoryProvider);
+    Future.microtask(load);
+    return const DashboardInitial();
+  }
 
   Future<void> load() async {
     state = const DashboardLoading();
@@ -74,7 +71,11 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         tips: tips,
       );
     } catch (e) {
-      state = DashboardError(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) {
+        state = DashboardError(e.message);
+      } else {
+        state = DashboardError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+      }
     }
   }
 }

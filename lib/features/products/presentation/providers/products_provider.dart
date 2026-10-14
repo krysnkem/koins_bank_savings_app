@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../../services/mock_backend_service.dart';
 import '../../data/datasources/products_remote_data_source.dart';
 import '../../data/models/savings_product.dart';
@@ -34,15 +35,16 @@ final productsRepositoryProvider = Provider<ProductsRepository>((ref) {
 });
 
 final productsNotifierProvider =
-    StateNotifierProvider<ProductsNotifier, ProductsState>((ref) {
-  final repo = ref.watch(productsRepositoryProvider);
-  return ProductsNotifier(repo);
-});
+    NotifierProvider<ProductsNotifier, ProductsState>(ProductsNotifier.new);
 
-class ProductsNotifier extends StateNotifier<ProductsState> {
-  ProductsNotifier(this._repository) : super(const ProductsInitial());
+class ProductsNotifier extends Notifier<ProductsState> {
+  late final ProductsRepository _repository;
 
-  final ProductsRepository _repository;
+  @override
+  ProductsState build() {
+    _repository = ref.watch(productsRepositoryProvider);
+    return const ProductsInitial();
+  }
 
   Future<void> load() async {
     state = const ProductsLoading();
@@ -50,7 +52,11 @@ class ProductsNotifier extends StateNotifier<ProductsState> {
       final products = await _repository.getProducts();
       state = ProductsLoaded(products);
     } catch (e) {
-      state = ProductsError(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) {
+        state = ProductsError(e.message);
+      } else {
+        state = ProductsError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+      }
     }
   }
 

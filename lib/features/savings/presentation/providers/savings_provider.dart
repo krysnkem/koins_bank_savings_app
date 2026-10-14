@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../../services/mock_backend_service.dart';
 import '../../data/datasources/savings_local_data_source.dart';
 import '../../data/datasources/savings_remote_data_source.dart';
@@ -41,15 +42,17 @@ final savingsRepositoryProvider = Provider<SavingsRepository>((ref) {
 });
 
 final savingsNotifierProvider =
-    StateNotifierProvider<SavingsNotifier, SavingsState>((ref) {
-  final repo = ref.watch(savingsRepositoryProvider);
-  return SavingsNotifier(repo);
-});
+    NotifierProvider<SavingsNotifier, SavingsState>(SavingsNotifier.new);
 
-class SavingsNotifier extends StateNotifier<SavingsState> {
-  SavingsNotifier(this._repository) : super(const SavingsInitial());
+class SavingsNotifier extends Notifier<SavingsState> {
+  late final SavingsRepository _repository;
 
-  final SavingsRepository _repository;
+  @override
+  SavingsState build() {
+    _repository = ref.watch(savingsRepositoryProvider);
+    Future.microtask(load);
+    return const SavingsInitial();
+  }
 
   Future<void> load() async {
     state = const SavingsLoading();
@@ -57,7 +60,11 @@ class SavingsNotifier extends StateNotifier<SavingsState> {
       final plans = await _repository.getPlans();
       state = SavingsLoaded(plans);
     } catch (e) {
-      state = SavingsError(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) {
+        state = SavingsError(e.message);
+      } else {
+        state = SavingsError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+      }
     }
   }
 
@@ -81,7 +88,11 @@ class SavingsNotifier extends StateNotifier<SavingsState> {
       state = SavingsLoaded(updatedPlans);
       return plan;
     } catch (e) {
-      state = SavingsError(e.toString().replaceAll('Exception: ', ''));
+      if (e is AppException) {
+        state = SavingsError(e.message);
+      } else {
+        state = SavingsError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+      }
       return null;
     }
   }
