@@ -33,6 +33,9 @@ class AppDatabase {
     }
   }
 
+  /// Database version (incremented to version 2 for dummy_posts table)
+  static const int databaseVersion = 2;
+
   /// Creates an in-memory SQLite database instance for fast, isolated tests.
   static Future<AppDatabase> createInMemory() async {
     ensureFfiInitialized();
@@ -40,10 +43,16 @@ class AppDatabase {
     final db = await factory.openDatabase(
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
-        version: 1,
+        version: databaseVersion,
         onCreate: (db, version) async {
           await _createTables(db);
           await _seedTables(db);
+        },
+        onUpgrade: (db, oldVersion, newVersion) async {
+          await _migrateAndEnsureTables(db);
+        },
+        onOpen: (db) async {
+          await _migrateAndEnsureTables(db);
         },
       ),
     );
@@ -57,10 +66,16 @@ class AppDatabase {
       return factory.openDatabase(
         inMemoryDatabasePath,
         options: OpenDatabaseOptions(
-          version: 1,
+          version: databaseVersion,
           onCreate: (db, version) async {
             await _createTables(db);
             await _seedTables(db);
+          },
+          onUpgrade: (db, oldVersion, newVersion) async {
+            await _migrateAndEnsureTables(db);
+          },
+          onOpen: (db) async {
+            await _migrateAndEnsureTables(db);
           },
         ),
       );
@@ -71,17 +86,49 @@ class AppDatabase {
 
     return openDatabase(
       path,
-      version: 1,
+      version: databaseVersion,
       onCreate: (db, version) async {
         await _createTables(db);
         await _seedTables(db);
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await _migrateAndEnsureTables(db);
+      },
+      onOpen: (db) async {
+        await _migrateAndEnsureTables(db);
+      },
     );
+  }
+
+  /// Automatically ensures all tables exist and migrates legacy tables on open / upgrade.
+  static Future<void> _migrateAndEnsureTables(Database db) async {
+    // 1. Ensure dummy_posts table is created if it does not exist
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS dummy_posts (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        tags TEXT NOT NULL,
+        views INTEGER NOT NULL DEFAULT 0
+      );
+    ''');
+
+    // 2. Drop obsolete financial_tips table if still existing from previous version
+    try {
+      await db.execute('DROP TABLE IF EXISTS financial_tips');
+    } catch (_) {}
+
+    // 3. Ensure fallback dummy posts exist in dummy_posts table
+    final countResult = await db.rawQuery('SELECT COUNT(*) as count FROM dummy_posts');
+    final count = countResult.isNotEmpty ? (countResult.first['count'] as int? ?? 0) : 0;
+    if (count == 0) {
+      await _seedDummyPosts(db);
+    }
   }
 
   static Future<void> _createTables(Database db) async {
     await db.execute('''
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
@@ -93,7 +140,7 @@ class AppDatabase {
     ''');
 
     await db.execute('''
-      CREATE TABLE savings_products (
+      CREATE TABLE IF NOT EXISTS savings_products (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         interest_rate REAL NOT NULL,
@@ -106,7 +153,7 @@ class AppDatabase {
     ''');
 
     await db.execute('''
-      CREATE TABLE savings_plans (
+      CREATE TABLE IF NOT EXISTS savings_plans (
         id TEXT PRIMARY KEY,
         user_email TEXT NOT NULL,
         product_id TEXT NOT NULL,
@@ -125,7 +172,7 @@ class AppDatabase {
     ''');
 
     await db.execute('''
-      CREATE TABLE transactions (
+      CREATE TABLE IF NOT EXISTS transactions (
         id TEXT PRIMARY KEY,
         user_email TEXT NOT NULL,
         plan_id TEXT,
@@ -142,7 +189,7 @@ class AppDatabase {
     ''');
 
     await db.execute('''
-      CREATE TABLE dummy_posts (
+      CREATE TABLE IF NOT EXISTS dummy_posts (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         body TEXT NOT NULL,
@@ -322,6 +369,10 @@ class AppDatabase {
     }
 
     // 5. Seed dummy posts
+    await _seedDummyPosts(db);
+  }
+
+  static Future<void> _seedDummyPosts(Database db) async {
     final posts = [
       {
         'id': '1',
@@ -346,7 +397,11 @@ class AppDatabase {
       },
     ];
     for (final post in posts) {
-      await db.insert('dummy_posts', post);
+      await db.insert(
+        'dummy_posts',
+        post,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
   }
 
