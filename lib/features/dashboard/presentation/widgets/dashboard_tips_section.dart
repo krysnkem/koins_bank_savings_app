@@ -7,9 +7,9 @@ import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../widgets/common/error_state.dart';
 import '../../data/models/financial_tip.dart';
-import '../providers/dashboard_provider.dart';
+import '../providers/tips_provider.dart';
 
-/// Displays the financial tips section, handling initial, loading, error, and loaded states.
+/// Displays the financial tips section, handling initial, loading, error, and loaded states independently.
 class DashboardTipsSection extends ConsumerWidget {
   const DashboardTipsSection({super.key});
 
@@ -21,7 +21,7 @@ class DashboardTipsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardState = ref.watch(dashboardNotifierProvider);
+    final tipsState = ref.watch(tipsNotifierProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,27 +34,37 @@ class DashboardTipsSection extends ConsumerWidget {
               ),
         ),
         const SizedBox(height: AppSpacing.md),
-        switch (dashboardState) {
-          DashboardInitial() || DashboardLoading() => const Center(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                child: CircularProgressIndicator(color: AppColors.primary),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: switch (tipsState) {
+            TipsInitial() || TipsLoading() => const Center(
+                key: ValueKey('tips_loading'),
+                child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
               ),
-            ),
-          DashboardError(:final message) => ErrorState(
-              message: message,
-              onRetry: () => ref.read(dashboardNotifierProvider.notifier).load(),
-            ),
-          DashboardLoaded(:final tips) => Column(
-              children: [
-                for (int i = 0; i < tips.length; i++)
-                  _TipCard(
-                    tip: tips[i],
-                    icon: _tipIcons[i % _tipIcons.length],
-                  ),
-              ],
-            ),
-        },
+            TipsError(:final message) => ErrorState(
+                key: const ValueKey('tips_error'),
+                message: message,
+                onRetry: () => ref.read(tipsNotifierProvider.notifier).load(),
+              ),
+            TipsLoaded(:final tips) => AnimatedOpacity(
+                key: const ValueKey('tips_loaded'),
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 300),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < tips.length; i++)
+                      _TipCard(
+                        tip: tips[i],
+                        icon: _tipIcons[i % _tipIcons.length],
+                      ),
+                  ],
+                ),
+              ),
+          },
+        ),
       ],
     );
   }

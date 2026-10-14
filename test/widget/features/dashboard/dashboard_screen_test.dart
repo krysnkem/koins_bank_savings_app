@@ -51,4 +51,35 @@ void main() {
     // Verify financial tips section
     expect(find.text('Financial Tips'), findsOneWidget);
   });
+
+  testWidgets('DashboardScreen renders immediately without global screen spinner on initial mount', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          home: DashboardScreen(),
+        ),
+      ),
+    );
+
+    // Initial pump without settling – check that no full screen spinner blocks the screen
+    await tester.pump();
+
+    // Verify sections are already in the widget tree immediately
+    expect(find.byType(DashboardHeaderSection), findsOneWidget);
+    expect(find.byType(DashboardQuickActionsSection), findsOneWidget);
+    expect(find.byType(DashboardRecentSavingsSection), findsOneWidget);
+    expect(find.byType(DashboardTipsSection), findsOneWidget);
+
+    // No global full-screen CircularProgressIndicator
+    expect(find.byKey(const ValueKey('dashboard_loading')), findsNothing);
+
+    await tester.pumpAndSettle();
+  });
 }

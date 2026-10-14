@@ -66,17 +66,44 @@ class DashboardRecentSavingsSection extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        if (plans.isEmpty)
-          const EmptyState(
-            title: 'No savings plans yet',
-            subtitle: 'Create your first plan to get started',
-          )
-        else
-          for (int i = 0; i < plans.length; i++)
-            _RecentSavingsCard(
-              plan: plans[i],
-              icon: _planIcons[i % _planIcons.length],
-            ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: (savingsState is SavingsLoading || savingsState is SavingsInitial)
+              ? const Center(
+                  key: ValueKey('recent_savings_loading'),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                )
+              : plans.isEmpty
+                  ? const EmptyState(
+                      key: ValueKey('recent_savings_empty'),
+                      title: 'No savings plans yet',
+                      subtitle: 'Create your first plan to get started',
+                    )
+                  : AnimatedOpacity(
+                      key: const ValueKey('recent_savings_loaded'),
+                      opacity: 1.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < plans.length; i++)
+                            _RecentSavingsCard(
+                              plan: plans[i],
+                              icon: _planIcons[i % _planIcons.length],
+                            ),
+                        ],
+                      ),
+                    ),
+        ),
       ],
     );
   }

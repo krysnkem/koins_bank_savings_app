@@ -9,6 +9,8 @@ import '../../data/datasources/tips_remote_data_source.dart';
 import '../../data/models/financial_tip.dart';
 import '../../data/repositories/dashboard_repository.dart';
 
+export 'tips_provider.dart';
+
 sealed class DashboardState {
   const DashboardState();
 }

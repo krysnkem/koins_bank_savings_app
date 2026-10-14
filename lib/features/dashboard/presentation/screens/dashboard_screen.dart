@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../providers/dashboard_provider.dart';
+import '../../../savings/presentation/providers/savings_provider.dart';
+import '../providers/tips_provider.dart';
 import '../widgets/dashboard_header_section.dart';
 import '../widgets/dashboard_quick_actions_section.dart';
 import '../widgets/dashboard_recent_savings_section.dart';
@@ -22,18 +23,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // Delay loading data until the screen is mounted and visible
+    // Load savings and tips independently once the dashboard mounts
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(dashboardNotifierProvider.notifier).load();
+        ref.read(savingsNotifierProvider.notifier).load();
+        ref.read(tipsNotifierProvider.notifier).load();
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(dashboardNotifierProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
@@ -47,33 +47,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       body: RefreshIndicator(
         color: AppColors.primary,
-        onRefresh: () => ref.read(dashboardNotifierProvider.notifier).load(),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 350),
-          child: state is DashboardLoading
-              ? const Center(
-                  key: ValueKey('dashboard_loading'),
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                )
-              : AnimatedOpacity(
-                  key: const ValueKey('dashboard_loaded'),
-                  opacity: state is DashboardLoaded ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeOut,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(AppSpacing.screenPadding),
-                    children: const [
-                      DashboardHeaderSection(),
-                      SizedBox(height: AppSpacing.lg),
-                      DashboardQuickActionsSection(),
-                      SizedBox(height: AppSpacing.xl),
-                      DashboardRecentSavingsSection(),
-                      SizedBox(height: AppSpacing.lg),
-                      DashboardTipsSection(),
-                    ],
-                  ),
-                ),
+        onRefresh: () async {
+          await Future.wait([
+            ref.read(savingsNotifierProvider.notifier).load(),
+            ref.read(tipsNotifierProvider.notifier).load(),
+          ]);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          children: const [
+            DashboardHeaderSection(),
+            SizedBox(height: AppSpacing.lg),
+            DashboardQuickActionsSection(),
+            SizedBox(height: AppSpacing.xl),
+            DashboardRecentSavingsSection(),
+            SizedBox(height: AppSpacing.lg),
+            DashboardTipsSection(),
+          ],
         ),
       ),
     );
