@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -18,8 +19,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
+  final _email = TextEditingController(text: AppConstants.mockEmail);
+  final _password = TextEditingController(text: AppConstants.mockPassword);
   bool _obscure = true;
   bool _loading = false;
 
@@ -80,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   label: 'Email Address',
                   hint: 'test@bank.com',
                   keyboardType: TextInputType.emailAddress,
-                  prefix: const Icon(Icons.email_outlined),
+                  prefix: const Icon(Icons.email_outlined, color: AppColors.primary),
                   validator: Validators.email,
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -88,10 +89,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   controller: _password,
                   label: 'Password',
                   obscureText: _obscure,
-                  prefix: const Icon(Icons.lock_outline),
+                  prefix: const Icon(Icons.lock_outline, color: AppColors.primary),
                   suffix: IconButton(
                     onPressed: () => setState(() => _obscure = !_obscure),
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(
+                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   validator: Validators.password,
                 ),
@@ -104,6 +108,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SnackBar(content: Text('Coming soon')),
                       );
                     },
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     child: const Text('Forgot Password?'),
                   ),
                 ),

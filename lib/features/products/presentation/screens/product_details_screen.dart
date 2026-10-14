@@ -24,60 +24,124 @@ class ProductDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(product.name)),
-      body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: AppSpacing.md),
-            const CircleAvatar(
-              radius: 36,
-              backgroundColor: AppColors.primaryContainer,
-              child: Icon(Icons.track_changes, color: AppColors.primary, size: 36),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              product.name,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            Text(
-              '${Formatters.percentage(product.interestRate)} p.a.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.account_balance_wallet_outlined, color: AppColors.primary),
-                    title: const Text('Minimum Deposit'),
-                    subtitle: Text(Formatters.naira(product.minimumDeposit)),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
-                    title: const Text('Duration'),
-                    subtitle: Text(product.duration),
-                  ),
-                ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: AppSpacing.lg),
+              const Center(
+                child: CircleAvatar(
+                  radius: 48,
+                  backgroundColor: AppColors.primaryContainer,
+                  child: Icon(Icons.track_changes, color: AppColors.primary, size: 48),
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(product.shortDescription, style: const TextStyle(color: AppColors.textSecondary)),
-            const Spacer(),
-            PrimaryButton(
-              label: 'Create Savings',
-              onPressed: () {
-                // EXPECTATION: open Create Savings with this product pre-selected.
-                Navigator.of(context).pushNamed('/create', arguments: product.id);
-              },
-            ),
-          ],
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                product.name,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '${Formatters.percentage(product.interestRate)} p.a.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.primaryContainer,
+                        child: Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                      title: const Text(
+                        'Minimum Deposit',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Text(
+                          Formatters.naira(product.minimumDeposit),
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.primaryContainer,
+                        child: Icon(
+                          Icons.calendar_today_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                      title: const Text(
+                        'Duration',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Text(
+                          product.duration,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                product.shortDescription,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+              PrimaryButton(
+                label: 'Create Savings',
+                onPressed: () {
+                  // EXPECTATION: open Create Savings with this product pre-selected.
+                  Navigator.of(context).pushNamed('/create', arguments: product.id);
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          ),
         ),
       ),
     );

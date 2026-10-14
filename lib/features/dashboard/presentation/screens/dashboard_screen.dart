@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../widgets/common/empty_state.dart';
@@ -20,6 +21,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  int _currentIndex = 0;
   List<({String title, String body})> _tips = [];
   bool _loadingTips = true;
   String? _tipsError;
@@ -119,7 +121,40 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          Text('Recent Savings', style: Theme.of(context).textTheme.titleMedium),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Savings',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+              ),
+              InkWell(
+                onTap: () => Navigator.of(context).pushNamed('/products'),
+                borderRadius: AppRadius.badge,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View All',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      SizedBox(width: 2),
+                      Icon(Icons.chevron_right, size: 16, color: AppColors.primary),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.md),
           if (plans.isEmpty)
             const EmptyState(
@@ -137,39 +172,137 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       backgroundColor: AppColors.primaryContainer,
                       child: Icon(icons[i % icons.length], color: AppColors.primary),
                     ),
-                    title: Text(plan.name),
-                    subtitle: Text(plan.frequency),
-                    trailing: Text(
-                      Formatters.naira(plan.amount == 0 ? plan.targetAmount : plan.amount),
+                    title: Text(
+                      plan.name,
                       style: const TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
                       ),
+                    ),
+                    subtitle: Text(plan.frequency),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          Formatters.naira(plan.amount == 0 ? plan.targetAmount : plan.amount),
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
+                      ],
                     ),
                   ),
                 ),
               );
             }),
           const SizedBox(height: AppSpacing.lg),
-          Text('Financial Tips', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Financial Tips',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+          ),
           const SizedBox(height: AppSpacing.md),
           if (_loadingTips)
             const Center(child: CircularProgressIndicator(color: AppColors.primary))
           else if (_tipsError != null)
             ErrorState(message: _tipsError!, onRetry: _loadTips)
-          else
-            ..._tips.map(
-              (tip) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: Card(
-                  color: AppColors.primaryContainer,
-                  child: ListTile(
-                    title: Text(tip.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(tip.body, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ),
-                ),
-              ),
-            ),
+          else ...[
+            () {
+              const tipIcons = [
+                Icons.lightbulb_outline,
+                Icons.track_changes,
+                Icons.savings_outlined,
+              ];
+              return Column(
+                children: [
+                  for (int i = 0; i < _tips.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: Card(
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.primaryContainer,
+                            child: Icon(
+                              tipIcons[i % tipIcons.length],
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
+                          ),
+                          title: Text(
+                            _tips[i].title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              _tips[i].body,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                          trailing: const Icon(Icons.more_vert, size: 20, color: AppColors.textTertiary),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            }(),
+          ],
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 1) {
+            Navigator.of(context).pushNamed('/products');
+          } else if (index == 3) {
+            Navigator.of(context).pushNamed('/profile');
+          }
+        },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppColors.surface,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textSecondary,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        elevation: 8,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            label: 'Savings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long_outlined),
+            label: 'Transactions',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.more_horiz),
+            label: 'More',
+          ),
         ],
       ),
     );
@@ -188,7 +321,7 @@ class _QuickAction extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.borderRadiusLg),
+        borderRadius: AppRadius.card,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
@@ -199,7 +332,22 @@ class _QuickAction extends StatelessWidget {
                 child: Icon(icon, color: AppColors.primary),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
+                ],
+              ),
             ],
           ),
         ),

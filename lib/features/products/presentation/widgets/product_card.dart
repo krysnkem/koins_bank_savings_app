@@ -37,8 +37,21 @@ class ProductCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(product.name, style: Theme.of(context).textTheme.titleMedium),
-                      Text(product.duration, style: const TextStyle(color: AppColors.textSecondary)),
+                      Text(
+                        product.name,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${product.duration}${product.duration.toLowerCase().contains("duration") ? "" : " Duration"}',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -46,14 +59,21 @@ class ProductCard extends StatelessWidget {
                   '${Formatters.percentage(product.interestRate)} p.a.',
                   style: const TextStyle(
                     color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            Text(product.shortDescription, style: const TextStyle(color: AppColors.textSecondary)),
+            Text(
+              product.shortDescription,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
             const SizedBox(height: AppSpacing.md),
             SizedBox(
               width: double.infinity,

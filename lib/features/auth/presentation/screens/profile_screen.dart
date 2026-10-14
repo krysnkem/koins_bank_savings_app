@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../widgets/common/primary_button.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -20,40 +20,99 @@ class ProfileScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
-            const SizedBox(height: AppSpacing.lg),
-            CircleAvatar(
-              radius: 48,
+            const SizedBox(height: AppSpacing.xl),
+            const CircleAvatar(
+              radius: 64,
               backgroundColor: AppColors.primaryContainer,
-              child: Text(
-                'JD',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person, color: AppColors.textPrimary, size: 36),
+                  SizedBox(height: 2),
+                  Text(
+                    'JD',
+                    style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
                     ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text(
+            const Text(
               AppConstants.mockUserName,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.mail_outline, size: 18, color: AppColors.textPrimary),
+                SizedBox(width: AppSpacing.sm),
+                Text(
+                  AppConstants.mockUserEmail,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                   ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            const Text(AppConstants.mockUserEmail, style: TextStyle(color: AppColors.textSecondary)),
-            const SizedBox(height: AppSpacing.xs),
-            const Text(AppConstants.mockUserPhone, style: TextStyle(color: AppColors.textSecondary)),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.phone_outlined, size: 18, color: AppColors.textPrimary),
+                SizedBox(width: AppSpacing.sm),
+                Text(
+                  AppConstants.mockUserPhone,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
             const Spacer(),
-            PrimaryButton(
-              label: 'Logout',
-              outlined: true,
-              icon: const Icon(Icons.logout),
+            OutlinedButton(
               onPressed: () {
                 // EXPECTATION: authProvider.logout() clears the session,
                 // then navigate to Login and clear the back stack.
                 ref.read(uiSessionProvider.notifier).logout();
                 Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
               },
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
+                foregroundColor: AppColors.textPrimary,
+                side: const BorderSide(color: AppColors.textPrimary, width: 1.5),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadius.card,
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout, size: 20, color: AppColors.textPrimary),
+                  SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
           ],
