@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/session/ui_session.dart';
 import '../../data/models/savings_plan.dart';
 import 'savings_provider.dart';
 
@@ -118,21 +117,6 @@ class CreateSavingsNotifier
         );
         return;
       }
-
-      final product = productById(state.productId!);
-      ref.read(uiSessionProvider.notifier).addPlan(
-            UiPlan(
-              id: plan.id,
-              name: name.trim(),
-              productId: state.productId!,
-              productName: product?.name ?? 'Savings Plan',
-              amount: 0,
-              targetAmount: targetVal,
-              monthlyContribution: monthlyVal,
-              frequency: 'Monthly',
-              duration: state.duration!,
-            ),
-          );
 
       state = CreateSavingsSuccess(
         plan: plan,

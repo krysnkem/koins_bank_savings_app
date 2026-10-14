@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../savings/data/models/savings_plan.dart';
+import '../../../savings/presentation/providers/savings_provider.dart';
 
 class TransactionsScreen extends ConsumerWidget {
   const TransactionsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plans = ref.watch(uiSessionProvider).plans;
+    final savingsState = ref.watch(savingsNotifierProvider);
+    final plans = savingsState is SavingsLoaded ? savingsState.plans : const <SavingsPlan>[];
 
     // Build synthetic recent transactions based on active plans
     final transactions = <_TransactionItem>[

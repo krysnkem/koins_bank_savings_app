@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/session/ui_session.dart';
 import '../../data/models/auth_user.dart';
 import 'auth_provider.dart';
 
@@ -79,10 +78,6 @@ class LoginNotifier extends AutoDisposeNotifier<LoginState> {
       return;
     }
     await ref.read(authNotifierProvider.notifier).login(email.trim(), password);
-    final authState = ref.read(authNotifierProvider);
-    if (authState is AuthAuthenticated) {
-      await ref.read(uiSessionProvider.notifier).login(email, password);
-    }
   }
 }
 

@@ -51,7 +51,6 @@ class DashboardNotifier extends AutoDisposeNotifier<DashboardState> {
   DashboardState build() {
     _dashboard = ref.watch(dashboardRepositoryProvider);
     _savings = ref.watch(savingsRepositoryProvider);
-    Future.microtask(load);
     return const DashboardInitial();
   }
 

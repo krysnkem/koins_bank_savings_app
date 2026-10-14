@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/latency_constants.dart';
 import '../models/savings_plan.dart';
 
 abstract class SavingsLocalDataSource {
@@ -12,9 +13,21 @@ abstract class SavingsLocalDataSource {
 }
 
 class SavingsLocalDataSourceImpl implements SavingsLocalDataSource {
-  SavingsLocalDataSourceImpl({SharedPreferences? prefs}) : _prefs = prefs;
+  SavingsLocalDataSourceImpl({SharedPreferences? prefs, Duration? latency})
+      : _prefs = prefs,
+        _latency = latency;
 
   final SharedPreferences? _prefs;
+  final Duration? _latency;
+
+  Duration get _effectiveLatency => _latency ?? LatencyConstants.disk;
+
+  Future<void> _simulateDiskLatency() async {
+    final d = _effectiveLatency;
+    if (d > Duration.zero) {
+      await Future.delayed(d);
+    }
+  }
 
   static const String _keySavingsPlans = 'saved_savings_plans';
 
@@ -23,6 +36,7 @@ class SavingsLocalDataSourceImpl implements SavingsLocalDataSource {
 
   @override
   Future<void> savePlans(List<SavingsPlan> plans) async {
+    await _simulateDiskLatency();
     final prefs = await _getPrefs();
     final jsonList = plans.map((plan) => jsonEncode(plan.toJson())).toList();
     await prefs.setStringList(_keySavingsPlans, jsonList);
@@ -30,6 +44,7 @@ class SavingsLocalDataSourceImpl implements SavingsLocalDataSource {
 
   @override
   Future<List<SavingsPlan>> getPlans() async {
+    await _simulateDiskLatency();
     final prefs = await _getPrefs();
     final list = prefs.getStringList(_keySavingsPlans);
     if (list == null || list.isEmpty) {

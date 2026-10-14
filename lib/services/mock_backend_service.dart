@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../core/constants/app_constants.dart';
+import '../core/constants/latency_constants.dart';
 import '../core/errors/app_exception.dart';
 import '../core/network/network_checker.dart';
 import '../features/auth/data/models/auth_user.dart';
@@ -14,12 +15,15 @@ class MockBackendService implements BackendService {
   MockBackendService({
     NetworkChecker? networkChecker,
     http.Client? httpClient,
+    Duration? latency,
   })  : _networkChecker = networkChecker ?? const NetworkCheckerImpl(),
-        _httpClient = httpClient ?? http.Client();
+        _httpClient = httpClient ?? http.Client(),
+        latency = latency ?? LatencyConstants.backend;
 
   final NetworkChecker _networkChecker;
   final http.Client _httpClient;
 
+  Duration latency;
   bool forceOffline = false;
 
   static const List<SavingsProduct> _hardcodedProducts = [
@@ -102,8 +106,11 @@ class MockBackendService implements BackendService {
     }
   }
 
-  Future<void> _simulateLatency({int ms = 10}) async {
-    await Future.delayed(Duration(milliseconds: ms));
+  Future<void> _simulateLatency([Duration? customDuration]) async {
+    final d = customDuration ?? latency;
+    if (d > Duration.zero) {
+      await Future.delayed(d);
+    }
   }
 
   @override
@@ -187,6 +194,7 @@ class MockBackendService implements BackendService {
   @override
   Future<List<FinancialTip>> getFinancialTips() async {
     await _ensureOnline();
+    await _simulateLatency();
     try {
       final response = await _httpClient.get(
         Uri.parse('${AppConstants.baseUrl}/posts?limit=5'),

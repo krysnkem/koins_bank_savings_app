@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../providers/auth_provider.dart';
 
 /// Logout action button on the Profile screen.
 class ProfileLogoutButton extends ConsumerWidget {
@@ -14,9 +14,11 @@ class ProfileLogoutButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return OutlinedButton(
-      onPressed: () {
-        ref.read(uiSessionProvider.notifier).logout();
-        context.go('/login');
+      onPressed: () async {
+        await ref.read(authNotifierProvider.notifier).logout();
+        if (context.mounted) {
+          context.go('/login');
+        }
       },
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),

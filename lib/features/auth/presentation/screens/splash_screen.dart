@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../widgets/common/app_logo.dart';
@@ -22,12 +21,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     super.initState();
     Future<void>.delayed(const Duration(milliseconds: 1800), () async {
       if (!mounted) return;
-      final repo = ref.read(authRepositoryProvider);
-      final isLoggedIn = await repo.isLoggedIn();
-      if (isLoggedIn) {
-        ref.read(uiSessionProvider.notifier).setLoggedIn(true);
-      }
+      await ref.read(authNotifierProvider.notifier).checkAuthStatus();
       if (!mounted) return;
+      final authState = ref.read(authNotifierProvider);
+      final isLoggedIn = authState is AuthAuthenticated;
       context.go(isLoggedIn ? '/dashboard' : '/login');
     });
   }

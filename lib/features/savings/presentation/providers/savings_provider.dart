@@ -50,7 +50,6 @@ class SavingsNotifier extends Notifier<SavingsState> {
   @override
   SavingsState build() {
     _repository = ref.watch(savingsRepositoryProvider);
-    Future.microtask(load);
     return const SavingsInitial();
   }
 

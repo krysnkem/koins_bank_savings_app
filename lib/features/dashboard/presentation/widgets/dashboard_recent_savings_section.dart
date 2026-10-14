@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../widgets/common/empty_state.dart';
+import '../../../savings/data/models/savings_plan.dart';
+import '../../../savings/presentation/providers/savings_provider.dart';
 
 /// Displays the user's recent savings plans on the dashboard.
 class DashboardRecentSavingsSection extends ConsumerWidget {
@@ -22,7 +23,10 @@ class DashboardRecentSavingsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plans = ref.watch(uiSessionProvider).plans.take(3).toList();
+    final savingsState = ref.watch(savingsNotifierProvider);
+    final plans = savingsState is SavingsLoaded
+        ? savingsState.plans.take(3).toList()
+        : <SavingsPlan>[];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +83,7 @@ class DashboardRecentSavingsSection extends ConsumerWidget {
 }
 
 class _RecentSavingsCard extends StatelessWidget {
-  final UiPlan plan;
+  final SavingsPlan plan;
   final IconData icon;
 
   const _RecentSavingsCard({
