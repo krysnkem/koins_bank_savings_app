@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,7 +23,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     Future<void>.delayed(const Duration(milliseconds: 1800), () {
       if (!mounted) return;
       final loggedIn = ref.read(uiSessionProvider).loggedIn;
-      Navigator.of(context).pushReplacementNamed(loggedIn ? '/dashboard' : '/login');
+      context.go(loggedIn ? '/dashboard' : '/login');
     });
   }
 

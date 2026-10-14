@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../../core/constants/app_constants.dart';
@@ -23,7 +24,6 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  int _currentIndex = 0;
   List<({String title, String body})> _tips = [];
   bool _loadingTips = true;
   String? _tipsError;
@@ -74,8 +74,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           IconButton(
             icon: const Icon(Icons.person_outline),
             onPressed: () {
-              // EXPECTATION: navigate to Profile.
-              Navigator.of(context).pushNamed('/profile');
+              // Navigate to Profile tab in shell
+              context.go('/profile');
             },
           ),
         ],
@@ -108,8 +108,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   icon: Icons.add,
                   label: 'Create Savings',
                   onTap: () {
-                    // EXPECTATION: open Create Savings with no product pre-selected.
-                    Navigator.of(context).pushNamed('/create');
+                    context.push('/create');
                   },
                 ),
               ),
@@ -119,8 +118,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   icon: Icons.savings_outlined,
                   label: 'View Products',
                   onTap: () {
-                    // EXPECTATION: navigate to Savings Products.
-                    Navigator.of(context).pushNamed('/products');
+                    context.go('/products');
                   },
                 ),
               ),
@@ -138,7 +136,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
               ),
               InkWell(
-                onTap: () => Navigator.of(context).pushNamed('/products'),
+                onTap: () => context.go('/products'),
                 borderRadius: AppRadius.badge,
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -180,6 +178,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     boxShadow: AppShadows.card,
                   ),
                   child: ListTile(
+                    onTap: () => context.push('/product/${plan.productId}'),
                     leading: CircleAvatar(
                       backgroundColor: AppColors.primaryContainer,
                       child: Icon(icons[i % icons.length], color: AppColors.primary),
@@ -292,51 +291,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             }(),
           ],
         ],
-      ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
-          boxShadow: AppShadows.bottomNav,
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-            if (index == 1) {
-              Navigator.of(context).pushNamed('/products');
-            } else if (index == 3) {
-              Navigator.of(context).pushNamed('/profile');
-            }
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.surface,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textSecondary,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              label: 'Savings',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              label: 'Transactions',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz),
-              label: 'More',
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/session/ui_session.dart';
@@ -16,6 +17,7 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -92,10 +94,8 @@ class ProfileScreen extends ConsumerWidget {
             const Spacer(),
             OutlinedButton(
               onPressed: () {
-                // EXPECTATION: authProvider.logout() clears the session,
-                // then navigate to Login and clear the back stack.
                 ref.read(uiSessionProvider.notifier).logout();
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+                context.go('/login');
               },
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -66,7 +67,11 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Savings Created Successfully')),
     );
-    Navigator.of(context).popUntil((route) => route.settings.name == '/dashboard' || route.isFirst);
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/dashboard');
+    }
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -10,7 +11,10 @@ class ProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Savings Products')),
+      appBar: AppBar(
+        title: const Text('Savings Products'),
+        automaticallyImplyLeading: false,
+      ),
       body: ListView.separated(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         itemCount: kProducts.length,
@@ -20,7 +24,7 @@ class ProductsScreen extends StatelessWidget {
           return ProductCard(
             product: product,
             onView: () {
-              Navigator.of(context).pushNamed('/product', arguments: product.id);
+              context.push('/product/${product.id}');
             },
           );
         },

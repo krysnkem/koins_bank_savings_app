@@ -46,6 +46,9 @@ lib/
 │   ├── constants/             # AppConstants (credentials, keys, mock URLs)
 │   ├── errors/                # AppException hierarchy (AuthException, NetworkException, ServerException)
 │   ├── network/               # NetworkChecker abstraction & connectivity implementation
+│   ├── router/                # go_router declarative routing:
+│   │   ├── app_router.dart    # StatefulShellRoute.indexedStack & route declarations
+│   │   └── main_shell_screen.dart # Persistent bottom navigation shell
 │   ├── session/               # UiSession presentation state & mock seeds
 │   ├── theme/                 # Centralized Design System:
 │   │   ├── app_colors.dart    # Strict brand color tokens
@@ -61,7 +64,7 @@ lib/
 │   │   └── presentation/      # LoginScreen, ProfileScreen
 │   ├── dashboard/             # Financial dashboard domain
 │   │   ├── data/              # FinancialTip model, tips datasource, repository
-│   │   └── presentation/      # DashboardScreen, widgets, providers
+│   │   └── presentation/      # DashboardScreen, TransactionsScreen, widgets, providers
 │   ├── products/              # Savings Products domain
 │   │   ├── data/              # SavingsProduct model, datasource, repository
 │   │   └── presentation/      # ProductsScreen, ProductDetailsScreen, ProductCard
@@ -97,6 +100,17 @@ The application enforces a **100% tokenized design system** with zero raw numeri
 - **Card Shadow**: `AppShadows.card` — subtle blur ($16\text{px}$) with gentle vertical offset ($4\text{px}$) and $5\%$ black opacity.
 - **Elevation Glow**: `AppShadows.avatarGlow` — subtle $15\%$ primary green glow for the profile avatar and key badges.
 - **Border Radius**: Tokenized via `AppRadius` (`AppRadius.card`, `AppRadius.button`, `AppRadius.input`, `AppRadius.pill`).
+
+---
+
+## Routing & Navigation Architecture (`go_router`)
+
+The application implements declarative routing powered by **`go_router`** and Flutter's Router API:
+
+- **Stateful Bottom Navigation**: Uses `StatefulShellRoute.indexedStack` paired with `StatefulNavigationShell` in [MainShellScreen](file:///Users/Chris/magic/koins_savings_app/lib/core/router/main_shell_screen.dart).
+- **Independent Branch Preservation**: 4 separate branches (`Dashboard`, `Savings / Products`, `Transactions`, `More / Profile`), each with its own `GlobalKey<NavigatorState>`. Switching tabs preserves scroll positions, input states, and loaded data without rebuilds or re-fetching.
+- **Root Navigator Overlays**: Modal flows such as **Product Details** (`/product/:id`) and **Create Savings Plan** (`/create`) declare `parentNavigatorKey: rootNavigatorKey`, ensuring they slide over the bottom navigation bar as clean, focused full-screen experiences.
+- **Deep Linking Ready**: All destinations are URL-addressable (`/dashboard`, `/products`, `/transactions`, `/profile`, `/product/:id`, `/create/:productId`).
 
 ---
 
@@ -146,7 +160,8 @@ fvm flutter analyze
 ```
 
 ### Automated Unit Test Suite
-The codebase includes 50 comprehensive unit tests covering:
+The codebase includes 52 comprehensive unit tests covering:
+- **Router & Shell Configuration**: Top-level route configuration, `rootNavigatorKey`, and all 4 `StatefulShellBranch` destinations.
 - **Validators**: Email format regex, password length ($\ge 8$), required fields, positive amount checks.
 - **Formatters**: Nigerian Naira currency formatting (`₦`), percentage formatting (`p.a.`), dynamic greetings.
 - **Exception Hierarchy**: Proper codes and messages for `AuthException`, `NetworkException`, and `ServerException`.
@@ -155,7 +170,7 @@ The codebase includes 50 comprehensive unit tests covering:
 
 ```bash
 fvm flutter test
-# Output: 50 tests passed! (100% green)
+# Output: 52 tests passed! (100% green)
 ```
 
 ---
@@ -201,13 +216,15 @@ fvm flutter build apk --release
 
 ## Screenshots & Visual Showcase
 
-| 1. Login Screen | 2. Dashboard Screen | 3. Savings Products |
-| :---: | :---: | :---: |
-| <img src="screenshots/01_login_screen.png" width="240" alt="Login Screen" /> | <img src="screenshots/02_dashboard_screen.png" width="240" alt="Dashboard Screen" /> | <img src="screenshots/03_savings_products_screen.png" width="240" alt="Savings Products" /> |
+### Persistent Shell & Tab Navigation (go_router)
+| 1. Dashboard (Tab 0) | 2. Savings Products (Tab 1) | 3. Transactions (Tab 2) | 4. More / Profile (Tab 3) |
+| :---: | :---: | :---: | :---: |
+| <img src="screenshots/09_gorouter_dashboard.png" width="200" alt="Dashboard Tab" /> | <img src="screenshots/10_gorouter_savings_tab.png" width="200" alt="Savings Products Tab" /> | <img src="screenshots/11_gorouter_transactions_tab.png" width="200" alt="Transactions Tab" /> | <img src="screenshots/12_gorouter_more_tab.png" width="200" alt="More Profile Tab" /> |
 
-| 4. Product Details | 5. Create Savings Plan | 6. User Profile |
+### Full-Screen Overlay Flows & Plan Creation
+| 5. Create Savings Plan (Overlay) | 6. Product Details Screen | 7. Login Authentication |
 | :---: | :---: | :---: |
-| <img src="screenshots/04_savings_details_screen.png" width="240" alt="Product Details" /> | <img src="screenshots/05_create_savings_screen.png" width="240" alt="Create Savings Plan" /> | <img src="screenshots/06_profile_screen.png" width="240" alt="User Profile" /> |
+| <img src="screenshots/14_gorouter_create_savings.png" width="200" alt="Create Savings Plan" /> | <img src="screenshots/04_savings_details_screen.png" width="200" alt="Product Details" /> | <img src="screenshots/08_gorouter_login.png" width="200" alt="Login Screen" /> |
 
 ---
 

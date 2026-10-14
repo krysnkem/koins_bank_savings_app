@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -153,8 +154,7 @@ class ProductDetailsScreen extends StatelessWidget {
               PrimaryButton(
                 label: 'Create Savings',
                 onPressed: () {
-                  // EXPECTATION: open Create Savings with this product pre-selected.
-                  Navigator.of(context).pushNamed('/create', arguments: product.id);
+                  context.push('/create/${product.id}');
                 },
               ),
               const SizedBox(height: AppSpacing.md),
