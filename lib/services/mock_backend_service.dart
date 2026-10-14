@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../core/constants/app_constants.dart';
+import '../core/errors/app_exception.dart';
 import '../core/network/network_checker.dart';
 import '../features/auth/data/models/auth_user.dart';
 import '../features/dashboard/data/models/financial_tip.dart';
@@ -19,16 +22,88 @@ class MockBackendService implements BackendService {
 
   bool forceOffline = false;
 
-  // ignore: unused_element
-  Future<void> _ensureOnline() {
-    // TODO: if forceOffline or !_networkChecker.isAvailable throw NetworkException
-    throw UnimplementedError('TODO $_networkChecker $_httpClient $forceOffline');
+  static const List<SavingsProduct> _hardcodedProducts = [
+    SavingsProduct(
+      id: '1',
+      name: 'Target Savings',
+      interestRate: 12.0,
+      duration: '12 Months',
+      shortDescription: 'Save towards a specific goal with competitive returns.',
+      minimumDeposit: 5000,
+    ),
+    SavingsProduct(
+      id: '2',
+      name: 'Fixed Deposit',
+      interestRate: 18.0,
+      duration: '6 Months',
+      shortDescription: 'Lock funds for a fixed period and earn higher interest.',
+      minimumDeposit: 5000,
+    ),
+    SavingsProduct(
+      id: '3',
+      name: 'Education Savings',
+      interestRate: 10.0,
+      duration: 'Flexible',
+      shortDescription: 'Flexible savings plan designed for education goals.',
+      minimumDeposit: 5000,
+    ),
+    SavingsProduct(
+      id: '4',
+      name: 'Vacation Savings',
+      interestRate: 8.0,
+      duration: 'Flexible',
+      shortDescription: 'Build your travel fund at your own pace.',
+      minimumDeposit: 5000,
+    ),
+  ];
+
+  late final List<SavingsPlan> _plans = [
+    SavingsPlan(
+      id: 'seed-1',
+      name: 'Emergency Fund',
+      productId: '1',
+      productName: 'Target Savings',
+      amount: 120000,
+      targetAmount: 500000,
+      monthlyContribution: 20000,
+      frequency: 'Monthly',
+      duration: '12 Months',
+      createdAt: DateTime.now(),
+    ),
+    SavingsPlan(
+      id: 'seed-2',
+      name: 'House Savings Plan',
+      productId: '2',
+      productName: 'Fixed Deposit',
+      amount: 250000,
+      targetAmount: 2000000,
+      monthlyContribution: 50000,
+      frequency: 'Monthly',
+      duration: '6 Months',
+      createdAt: DateTime.now(),
+    ),
+    SavingsPlan(
+      id: 'seed-3',
+      name: 'Education Plan',
+      productId: '3',
+      productName: 'Education Savings',
+      amount: 180000,
+      targetAmount: 800000,
+      monthlyContribution: 15000,
+      frequency: 'Monthly',
+      duration: 'Flexible',
+      createdAt: DateTime.now(),
+    ),
+  ];
+
+  Future<void> _ensureOnline() async {
+    if (forceOffline || !await _networkChecker.isAvailable) {
+      throw const NetworkException('No internet connection');
+    }
   }
 
-  // ignore: unused_element
-  Future<void> _simulateLatency() {
-    // TODO: await Future.delayed(Duration(milliseconds: ms))
-    throw UnimplementedError();
+  Future<void> _simulateLatency({int ms = 10}) async {
+    await Future.delayed(Duration(milliseconds: ms));
   }
 
   @override
@@ -36,28 +111,43 @@ class MockBackendService implements BackendService {
     required String email,
     required String password,
   }) async {
-    // TODO: _ensureOnline, _simulateLatency
-    // TODO: match AppConstants.mockEmail / mockPassword else AuthException
-    throw UnimplementedError();
+    await _ensureOnline();
+    await _simulateLatency();
+
+    if (email.trim().toLowerCase() == AppConstants.mockEmail.toLowerCase() &&
+        password == AppConstants.mockPassword) {
+      return const AuthUser(
+        fullName: AppConstants.mockUserName,
+        email: AppConstants.mockUserEmail,
+        phone: AppConstants.mockUserPhone,
+      );
+    }
+    throw const AuthException('Invalid email or password');
   }
 
   @override
   Future<List<SavingsProduct>> getSavingsProducts() async {
-    // TODO: _ensureOnline, _simulateLatency, return the 4 hardcoded products
-    throw UnimplementedError();
+    await _ensureOnline();
+    await _simulateLatency();
+    return List.from(_hardcodedProducts);
   }
 
   @override
   Future<SavingsProduct> getProductById(String id) async {
-    // TODO: _ensureOnline, _simulateLatency
-    // TODO: throw ServerException('Product not found') when id is missing
-    throw UnimplementedError();
+    await _ensureOnline();
+    await _simulateLatency();
+    try {
+      return _hardcodedProducts.firstWhere((p) => p.id == id);
+    } catch (_) {
+      throw const ServerException('Product not found');
+    }
   }
 
   @override
   Future<List<SavingsPlan>> getSavingsPlans() async {
-    // TODO: _ensureOnline, _simulateLatency, return in-memory plans (seed 3)
-    throw UnimplementedError();
+    await _ensureOnline();
+    await _simulateLatency();
+    return List.from(_plans);
   }
 
   @override
@@ -68,15 +158,55 @@ class MockBackendService implements BackendService {
     required double monthlyContribution,
     required String duration,
   }) async {
-    // TODO: _ensureOnline, _simulateLatency
-    // TODO: ServerException if productId is unknown, else append and return
-    throw UnimplementedError();
+    await _ensureOnline();
+    await _simulateLatency();
+
+    SavingsProduct product;
+    try {
+      product = _hardcodedProducts.firstWhere((p) => p.id == productId);
+    } catch (_) {
+      throw ServerException('Unknown productId: $productId');
+    }
+
+    final plan = SavingsPlan(
+      id: 'plan-${_plans.length + 1}',
+      name: name,
+      productId: productId,
+      productName: product.name,
+      amount: 0,
+      targetAmount: targetAmount,
+      monthlyContribution: monthlyContribution,
+      frequency: 'Monthly',
+      duration: duration,
+      createdAt: DateTime.now(),
+    );
+    _plans.add(plan);
+    return plan;
   }
 
   @override
   Future<List<FinancialTip>> getFinancialTips() async {
-    // TODO: _ensureOnline, GET dummyjson /posts?limit=5 via _httpClient
-    // TODO: map first 3 posts, else ServerException
-    throw UnimplementedError();
+    await _ensureOnline();
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('${AppConstants.baseUrl}/posts?limit=5'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final posts = (data['posts'] as List<dynamic>?) ?? [];
+        return posts.take(3).map((item) {
+          final p = item as Map<String, dynamic>;
+          return FinancialTip(
+            id: p['id'].toString(),
+            title: p['title']?.toString() ?? 'Financial Tip',
+            body: p['body']?.toString() ?? '',
+          );
+        }).toList();
+      }
+      throw ServerException('Failed to load tips (${response.statusCode})');
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw ServerException(e.toString());
+    }
   }
 }

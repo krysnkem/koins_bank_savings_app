@@ -30,27 +30,23 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    // TODO: user = await _remote.login(...)
-    // TODO: await _local.saveSession(user) only after success
-    // TODO: rethrow AuthException and NetworkException without saving
-    throw UnimplementedError('TODO $_remote $_local');
+    final user = await _remote.login(email: email, password: password);
+    await _local.saveSession(user);
+    return user;
   }
 
   @override
   Future<void> logout() async {
-    // TODO: await _local.clearSession()
-    throw UnimplementedError('TODO $_remote $_local');
+    await _local.clearSession();
   }
 
   @override
   Future<AuthUser?> getCurrentUser() {
-    // TODO: return _local.getSession()
-    throw UnimplementedError('TODO $_remote $_local');
+    return _local.getSession();
   }
 
   @override
   Future<bool> isLoggedIn() {
-    // TODO: return _local.isLoggedIn()
-    throw UnimplementedError('TODO $_remote $_local');
+    return _local.isLoggedIn();
   }
 }

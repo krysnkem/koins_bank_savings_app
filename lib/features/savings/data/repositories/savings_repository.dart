@@ -26,9 +26,9 @@ class SavingsRepositoryImpl implements SavingsRepository {
 
   @override
   Future<List<SavingsPlan>> getPlans() async {
-    // TODO: plans = await _remote.getSavingsPlans()
-    // TODO: await _local.savePlans(plans) then return plans
-    throw UnimplementedError('TODO $_remote $_local');
+    final plans = await _remote.getSavingsPlans();
+    await _local.savePlans(plans);
+    return plans;
   }
 
   @override
@@ -39,9 +39,14 @@ class SavingsRepositoryImpl implements SavingsRepository {
     required double monthlyContribution,
     required String duration,
   }) async {
-    // TODO: plan = await _remote.createSavingsPlan(...)
-    // TODO: await _local.addPlan(plan) only after success
-    // TODO: rethrow NetworkException without writing locally
-    throw UnimplementedError('TODO $_remote $_local');
+    final plan = await _remote.createSavingsPlan(
+      name: name,
+      productId: productId,
+      targetAmount: targetAmount,
+      monthlyContribution: monthlyContribution,
+      duration: duration,
+    );
+    await _local.addPlan(plan);
+    return plan;
   }
 }

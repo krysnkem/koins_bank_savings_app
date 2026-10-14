@@ -15,13 +15,11 @@ class ProductsRepositoryImpl implements ProductsRepository {
 
   @override
   Future<List<SavingsProduct>> getProducts() {
-    // TODO: return _remote.getSavingsProducts() and rethrow NetworkException
-    throw UnimplementedError('TODO $_remote');
+    return _remote.getSavingsProducts();
   }
 
   @override
   Future<SavingsProduct> getProductById(String id) {
-    // TODO: return _remote.getProductById(id)
-    throw UnimplementedError('TODO $_remote');
+    return _remote.getProductById(id);
   }
 }
