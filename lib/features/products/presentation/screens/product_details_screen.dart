@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../widgets/common/error_state.dart';
@@ -31,33 +33,49 @@ class ProductDetailsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: AppSpacing.lg),
-              const Center(
-                child: CircleAvatar(
-                  radius: 48,
-                  backgroundColor: AppColors.primaryContainer,
-                  child: Icon(Icons.track_changes, color: AppColors.primary, size: 48),
+              Center(
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primaryContainer,
+                    boxShadow: AppShadows.avatarGlow,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.track_changes, color: AppColors.primary, size: 48),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
                 product.name,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.2,
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 '${Formatters.percentage(product.interestRate)} p.a.',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                  letterSpacing: -0.5,
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Card(
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.card,
+                ),
                 child: Column(
                   children: [
                     ListTile(

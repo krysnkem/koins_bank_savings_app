@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../widgets/common/app_text_field.dart';
@@ -79,189 +80,239 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
+              const Text(
                 'Create Savings Plan',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.2,
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(
+              const Text(
                 'Set your savings goal and start building towards your future.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              AppTextField(
-                controller: _name,
-                label: 'Savings Name',
-                hint: 'Enter savings name',
-                standaloneLabel: true,
-                prefix: const Icon(Icons.edit_outlined, color: AppColors.primary),
-                validator: (v) => Validators.required(v, fieldName: 'Savings Name'),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.cardSubtle,
+                ),
+                child: AppTextField(
+                  controller: _name,
+                  label: 'Savings Name',
+                  hint: 'Enter savings name',
+                  standaloneLabel: true,
+                  prefix: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                  validator: (v) => Validators.required(v, fieldName: 'Savings Name'),
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Product Type',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  DropdownButtonFormField<String>(
-                    initialValue: _productId,
-                    decoration: const InputDecoration(
-                      hintText: 'Select product type',
-                      prefixIcon: Icon(Icons.savings_outlined, color: AppColors.primary),
-                      prefixIconColor: AppColors.primary,
-                      filled: true,
-                      fillColor: AppColors.surface,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.input,
-                        borderSide: BorderSide(color: AppColors.inputBorder),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.input,
-                        borderSide: BorderSide(color: AppColors.inputBorder),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.input,
-                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.cardSubtle,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Product Type',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    items: [
-                      for (final product in kProducts)
-                        DropdownMenuItem(
-                          value: product.id,
-                          child: Text('${product.name} (${product.interestRate.toStringAsFixed(0)}%)'),
+                    const SizedBox(height: AppSpacing.xs),
+                    DropdownButtonFormField<String>(
+                      initialValue: _productId,
+                      decoration: const InputDecoration(
+                        hintText: 'Select product type',
+                        prefixIcon: Icon(Icons.savings_outlined, color: AppColors.primary),
+                        prefixIconColor: AppColors.primary,
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: 16,
                         ),
-                    ],
-                    onChanged: (value) => setState(() => _productId = value),
-                    validator: (v) => v == null ? 'Product Type is required' : null,
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                controller: _target,
-                label: 'Target Amount',
-                hint: 'Enter target amount',
-                standaloneLabel: true,
-                keyboardType: TextInputType.number,
-                prefix: const Text(
-                  '₦',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                suffix: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: AppRadius.tag,
-                  ),
-                  child: const Text(
-                    'NGN',
-                    style: TextStyle(
-                      color: AppColors.secondaryDark,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
+                        border: OutlineInputBorder(
+                          borderRadius: AppRadius.input,
+                          borderSide: BorderSide(color: AppColors.inputBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: AppRadius.input,
+                          borderSide: BorderSide(color: AppColors.inputBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: AppRadius.input,
+                          borderSide: BorderSide(color: AppColors.primary, width: 2),
+                        ),
+                      ),
+                      items: [
+                        for (final product in kProducts)
+                          DropdownMenuItem(
+                            value: product.id,
+                            child: Text('${product.name} (${product.interestRate.toStringAsFixed(0)}%)'),
+                          ),
+                      ],
+                      onChanged: (value) => setState(() => _productId = value),
+                      validator: (v) => v == null ? 'Product Type is required' : null,
                     ),
-                  ),
+                  ],
                 ),
-                validator: Validators.amount,
               ),
               const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                controller: _monthly,
-                label: 'Monthly Contribution',
-                hint: 'Enter monthly contribution',
-                standaloneLabel: true,
-                keyboardType: TextInputType.number,
-                prefix: const Text(
-                  '₦',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    color: AppColors.textPrimary,
-                  ),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.cardSubtle,
                 ),
-                suffix: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: AppRadius.tag,
-                  ),
-                  child: const Text(
-                    'NGN',
+                child: AppTextField(
+                  controller: _target,
+                  label: 'Target Amount',
+                  hint: 'Enter target amount',
+                  standaloneLabel: true,
+                  keyboardType: TextInputType.number,
+                  prefix: const Text(
+                    '₦',
                     style: TextStyle(
-                      color: AppColors.secondaryDark,
                       fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
-                  ),
-                ),
-                validator: Validators.amount,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Duration',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  DropdownButtonFormField<String>(
-                    initialValue: _duration,
-                    decoration: const InputDecoration(
-                      hintText: 'Select duration',
-                      prefixIcon: Icon(Icons.calendar_month_outlined, color: AppColors.primary),
-                      prefixIconColor: AppColors.primary,
-                      filled: true,
-                      fillColor: AppColors.surface,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.input,
-                        borderSide: BorderSide(color: AppColors.inputBorder),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.input,
-                        borderSide: BorderSide(color: AppColors.inputBorder),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: AppRadius.input,
-                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+                  suffix: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: AppRadius.tag,
+                    ),
+                    child: const Text(
+                      'NGN',
+                      style: TextStyle(
+                        color: AppColors.secondaryDark,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
                       ),
                     ),
-                    items: [
-                      for (final duration in kDurations)
-                        DropdownMenuItem(value: duration, child: Text(duration)),
-                    ],
-                    onChanged: (value) => setState(() => _duration = value),
-                    validator: (v) => v == null ? 'Duration is required' : null,
                   ),
-                ],
+                  validator: Validators.amount,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.cardSubtle,
+                ),
+                child: AppTextField(
+                  controller: _monthly,
+                  label: 'Monthly Contribution',
+                  hint: 'Enter monthly contribution',
+                  standaloneLabel: true,
+                  keyboardType: TextInputType.number,
+                  prefix: const Text(
+                    '₦',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  suffix: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: AppRadius.tag,
+                    ),
+                    child: const Text(
+                      'NGN',
+                      style: TextStyle(
+                        color: AppColors.secondaryDark,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                  validator: Validators.amount,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.cardSubtle,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Duration',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    DropdownButtonFormField<String>(
+                      initialValue: _duration,
+                      decoration: const InputDecoration(
+                        hintText: 'Select duration',
+                        prefixIcon: Icon(Icons.calendar_month_outlined, color: AppColors.primary),
+                        prefixIconColor: AppColors.primary,
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: 16,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: AppRadius.input,
+                          borderSide: BorderSide(color: AppColors.inputBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: AppRadius.input,
+                          borderSide: BorderSide(color: AppColors.inputBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: AppRadius.input,
+                          borderSide: BorderSide(color: AppColors.primary, width: 2),
+                        ),
+                      ),
+                      items: [
+                        for (final duration in kDurations)
+                          DropdownMenuItem(value: duration, child: Text(duration)),
+                      ],
+                      onChanged: (value) => setState(() => _duration = value),
+                      validator: (v) => v == null ? 'Duration is required' : null,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               Container(

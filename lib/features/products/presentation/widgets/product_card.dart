@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
 
@@ -20,7 +22,13 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: AppShadows.card,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Column(
@@ -39,10 +47,11 @@ class ProductCard extends StatelessWidget {
                     children: [
                       Text(
                         product.name,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -50,17 +59,30 @@ class ProductCard extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Text(
-                  '${Formatters.percentage(product.interestRate)} p.a.',
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
+                Text.rich(
+                  TextSpan(
+                    text: Formatters.percentage(product.interestRate),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 22,
+                    ),
+                    children: const [
+                      TextSpan(
+                        text: ' p.a.',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -72,12 +94,22 @@ class ProductCard extends StatelessWidget {
                 color: AppColors.textSecondary,
                 fontSize: 13,
                 height: 1.4,
+                fontWeight: FontWeight.w400,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary, width: 1.2),
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadius.button),
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 onPressed: () {
                   // EXPECTATION: navigate to Savings Details for this product id.
                   onView();

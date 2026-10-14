@@ -8,7 +8,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../widgets/common/empty_state.dart';
 import '../../../../widgets/common/error_state.dart';
@@ -83,16 +85,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         children: [
           Text(
             '${Formatters.greeting()}, ${AppConstants.mockUserName}',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            style: AppTextStyles.titleLarge,
           ),
-          const SizedBox(height: AppSpacing.md),
-          const Text('Total Savings', style: TextStyle(color: AppColors.textSecondary)),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Total Savings',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
           Text(
             Formatters.naira(kDashboardTotal),
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
+            style: AppTextStyles.moneyHero,
           ),
           const SizedBox(height: AppSpacing.lg),
           Row(
@@ -166,7 +172,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               final plan = plans[i];
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: Card(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: AppColors.cardBorder),
+                    boxShadow: AppShadows.card,
+                  ),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: AppColors.primaryContainer,
@@ -175,11 +187,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     title: Text(
                       plan.name,
                       style: const TextStyle(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
+                        fontSize: 15,
                       ),
                     ),
-                    subtitle: Text(plan.frequency),
+                    subtitle: Text(
+                      plan.frequency,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -188,7 +208,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           style: const TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                            fontSize: 16,
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -224,7 +244,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   for (int i = 0; i < _tips.length; i++)
                     Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: Card(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: AppRadius.card,
+                          border: Border.all(color: AppColors.cardBorder),
+                          boxShadow: AppShadows.card,
+                        ),
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: AppColors.primaryContainer,
@@ -239,7 +265,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               fontSize: 14,
                               color: AppColors.textPrimary,
                             ),
@@ -267,43 +293,50 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ],
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          if (index == 1) {
-            Navigator.of(context).pushNamed('/products');
-          } else if (index == 3) {
-            Navigator.of(context).pushNamed('/profile');
-          }
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            label: 'Savings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            label: 'Transactions',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'More',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: AppColors.cardBorder, width: 1)),
+          boxShadow: AppShadows.bottomNav,
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+            if (index == 1) {
+              Navigator.of(context).pushNamed('/products');
+            } else if (index == 3) {
+              Navigator.of(context).pushNamed('/profile');
+            }
+          },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: AppColors.surface,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textSecondary,
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              label: 'Savings',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long_outlined),
+              label: 'Transactions',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.more_horiz),
+              label: 'More',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -318,37 +351,46 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
         borderRadius: AppRadius.card,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                backgroundColor: AppColors.primaryContainer,
-                child: Icon(icon, color: AppColors.primary),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
+        border: Border.all(color: AppColors.cardBorder),
+        boxShadow: AppShadows.card,
+      ),
+      child: Material(
+        color: AppColors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.card,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppColors.primaryContainer,
+                  child: Icon(icon, color: AppColors.primary),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
-                  ),
-                  const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
-                ],
-              ),
-            ],
+                    const Icon(Icons.chevron_right, size: 18, color: AppColors.textSecondary),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

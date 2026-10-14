@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -21,18 +22,23 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           children: [
             const SizedBox(height: AppSpacing.xl),
-            const CircleAvatar(
-              radius: 64,
-              backgroundColor: AppColors.primaryContainer,
-              child: Column(
+            Container(
+              width: 128,
+              height: 128,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primaryContainer,
+                boxShadow: AppShadows.avatarGlow,
+              ),
+              child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.person, color: AppColors.textPrimary, size: 36),
+                  Icon(Icons.person, color: AppColors.primary, size: 36),
                   SizedBox(height: 2),
                   Text(
                     'JD',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.primary,
                       fontSize: 32,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
@@ -48,6 +54,7 @@ class ProfileScreen extends ConsumerWidget {
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
+                letterSpacing: -0.2,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
