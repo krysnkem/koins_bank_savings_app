@@ -11,20 +11,24 @@ A high-performance fintech mobile savings application built for the **Koins MFB 
 
 ## Table of Contents
 1. [Project Overview](#project-overview)
-2. [Architecture & Project Structure](#architecture--project-structure)
-3. [Technology Stack & Packages Used](#technology-stack--packages-used)
-4. [Design System & Theming (Material 3)](#design-system--theming-material-3)
-5. [State Management Rationale (Riverpod 2.0+)](#state-management-rationale-riverpod-20)
-6. [Routing & Navigation (`go_router`)](#routing--navigation-go_router)
-7. [Local Storage Strategy (`shared_preferences`)](#local-storage-strategy-shared_preferences)
-8. [Abstracted Database Architecture & SQLite (`sqflite`)](#abstracted-database-architecture--sqlite-sqflite)
-9. [REST API Integration (DummyJSON Posts)](#rest-api-integration-dummyjson-posts)
-10. [Mock Authentication & Test Credentials](#mock-authentication--test-credentials)
-11. [Testing & Quality Assurance (95 Tests)](#testing--quality-assurance-95-tests)
-12. [Setup & Build Instructions](#setup--build-instructions)
-13. [Screenshots & Visual Showcase](#screenshots--visual-showcase)
-14. [Assumptions & Future Improvements](#assumptions--future-improvements)
-15. [Assessment Deliverables Checklist](#assessment-deliverables-checklist)
+2. [Architecture & Folder Structure Rationale](#architecture--folder-structure-rationale)
+   - [Architectural Decision Record (ADR): Feature-First vs. Layer-First Structure](#architectural-decision-record-adr-feature-first-vs-layer-first-structure)
+   - [Project Directory Layout](#project-directory-layout)
+3. [Assessment Feature Inventory & Discovery Guide](#assessment-feature-inventory--discovery-guide)
+4. [Robust Product Experience Enhancements](#robust-product-experience-enhancements)
+5. [Technology Stack & Packages Used](#technology-stack--packages-used)
+6. [Design System & Theming (Material 3)](#design-system--theming-material-3)
+7. [State Management Rationale (Riverpod 2.0+)](#state-management-rationale-riverpod-20)
+8. [Routing & Navigation (`go_router`)](#routing--navigation-go_router)
+9. [Local Storage Strategy (`shared_preferences`)](#local-storage-strategy-shared_preferences)
+10. [Abstracted Database Architecture & SQLite (`sqflite`)](#abstracted-database-architecture--sqlite-sqflite)
+11. [REST API Integration (DummyJSON Posts)](#rest-api-integration-dummyjson-posts)
+12. [Mock Authentication & Test Credentials](#mock-authentication--test-credentials)
+13. [Testing & Quality Assurance (95 Tests)](#testing--quality-assurance-95-tests)
+14. [Setup & Build Instructions](#setup--build-instructions)
+15. [Screenshots & Visual Showcase](#screenshots--visual-showcase)
+16. [Assumptions & Future Improvements](#assumptions--future-improvements)
+17. [Assessment Deliverables Checklist](#assessment-deliverables-checklist)
 
 ---
 
@@ -43,9 +47,46 @@ The **Koins Savings App** is designed for digital banking customers to manage sa
 
 ---
 
-## Architecture & Project Structure
+## Architecture & Folder Structure Rationale
 
-The codebase is built on **Feature-First Clean Architecture**, separating presentation, business logic, and data layers inside modular feature packages.
+### Architectural Decision Record (ADR): Feature-First vs. Layer-First Structure
+
+The assessment brief proposed the following traditional **layer-first** folder structure:
+
+```
+lib/ 
+├── core/ 
+├── models/ 
+├── services/ 
+├── repositories/ 
+├── screens/ 
+├── widgets/ 
+├── utils/ 
+├── providers/ 
+└── main.dart 
+```
+
+While suitable for simple single-flow prototypes, this project deliberately chose a **Modular Feature-First Clean Architecture** (`lib/features/{auth, dashboard, products, savings}/...`).
+
+#### Rationale & Engineering Justification:
+
+1. **Promoting Modularity & Scalability**:
+   - In a layer-first structure, as an application scales to 20+ screens, folders like `screens/`, `models/`, and `providers/` become massive dumping grounds containing hundreds of loosely related files.
+   - In **Feature-First Architecture**, every functional capability (Authentication, Financial Dashboard, Savings Products, Savings Plan Creation) is treated as a self-contained module containing its own UI (`presentation/screens`, `presentation/widgets`), business logic (`presentation/notifiers`, `presentation/states`), and data contracts (`data/models`, `data/datasources`, `data/repositories`).
+   - Feature modules function as independent bounded contexts that can be built, tested, refactored, or even extracted into standalone Dart packages or micro-apps without unintended side-effects across the app.
+
+2. **Strict Separation of Concerns & High Cohesion**:
+   - **High Cohesion**: All code that changes together for a single business capability lives together. When maintaining or refactoring the savings creation flow, engineers never need to jump across 6 separate, distant folders.
+   - **Low Coupling**: Features interact exclusively through explicit boundaries, contracts, and services, preventing cross-cutting spaghetti dependencies.
+
+3. **Domain-Specific vs. Shared Core Boundaries**:
+   - Shared design tokens (`AppColors`, `AppRadius`, `AppTheme`), network checkers, error hierarchies, formatters, and universal UI primitives (e.g. `AppButton`, `AppTextField`, `AppShimmer`) reside cleanly in `lib/core/` and `lib/widgets/common/`.
+   - Feature-specific business rules remain isolated inside their feature package.
+
+4. **1-to-1 Test Suite Alignment**:
+   - The test directory structure (`test/unit/features/...` and `test/widget/features/...`) directly mirrors `lib/features/...`. Discovering tests, writing unit coverage, and verifying regression safety is intuitive and immediate for any engineer or automated CI/CD pipeline.
+
+### Project Directory Layout
 
 ```
 lib/
@@ -79,13 +120,65 @@ lib/
 │       ├── data/              # SavingsPlan model, local/remote datasources, repository
 │       └── presentation/      # CreateSavingsScreen, SavingsPlansScreen
 ├── services/                  # BackendService contract & MockBackendService implementation
-│   └── database/              # Abstract DatabaseService, SqfliteDatabaseService, AppDatabase
+│   ├── database/              # Abstract DatabaseService, SqfliteDatabaseService, AppDatabase
+│   └── storage/               # SharedPreferencesService contract & implementation
 ├── repositories/              # Repository exports & contracts
 ├── widgets/
 │   ├── common/                # Reusable UI components (buttons, input fields, error states, shimmer)
 │   └── savings/               # Reusable savings domain cards & status chips
 └── main.dart                  # Application entry point & Riverpod ProviderScope
 ```
+
+---
+
+## Assessment Feature Inventory & Discovery Guide
+
+Every functional and technical requirement outlined in the **Koins MFB Assessment Specification** has been fully implemented. Below is the discovery guide detailing where each feature lives in the codebase and how to test and interact with it in the application:
+
+| # | Assessment Requirement | Implementation Files | App Route / Screen | How to Discover & Interact |
+| :---: | :--- | :--- | :--- | :--- |
+| **1** | **Login Screen & Validation**<br>• Email & Password fields<br>• Login Button<br>• Non-functional Forgot Password & Register stubs<br>• Required & regex format email validation<br>• Required & $\ge 8$ char password validation<br>• Mock auth (`test@bank.com` / `Password123`) | [login_screen.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/auth/presentation/screens/login_screen.dart)<br>[login_notifier.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/auth/presentation/notifiers/login_notifier.dart) | `/login` (Initial launch route) | • Launch the app (or log out from Profile).<br>• Tap **"Auto-fill Test Credentials"** for 1-tap instant testing, or manually type `test@bank.com` & `Password123`.<br>• Test inline validations by entering invalid emails or short passwords.<br>• Toggle password visibility via the eye icon.<br>• Tap "Forgot Password" or "Register" to verify non-functional feedback stubs. |
+| **2** | **Dashboard Screen**<br>• Personalized greeting ("Good Morning, John Doe")<br>• Total Savings (₦850,000)<br>• Quick actions (Create Savings, View Products)<br>• 3 Recent Savings plans (Emergency Fund, ₦120,000, Monthly) | [dashboard_screen.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/dashboard/presentation/screens/dashboard_screen.dart)<br>[dashboard_notifier.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/dashboard/presentation/notifiers/dashboard_notifier.dart) | `/dashboard` (Tab 0 of Persistent Shell) | • Lands here immediately after login.<br>• Observe dynamic time-of-day greeting.<br>• Watch the animated rolling ticker count up to `₦850,000`.<br>• Tap "Create Savings" quick action to launch the creation modal.<br>• Tap "Explore Products" to jump to Products tab.<br>• Inspect the 3 recent savings cards with plan names, amounts, and frequencies.<br>• Swipe down to test native pull-to-refresh. |
+| **3** | **Savings Products Screen**<br>• 4 Products (*Target Savings*, *Fixed Deposit*, *Education Savings*, *Vacation Savings*)<br>• Interest rates (8%–18%) & tenures<br>• Product name, short description, "View Details" CTA | [savings_products_screen.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/products/presentation/screens/savings_products_screen.dart)<br>[product_card.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/products/presentation/widgets/product_card.dart) | `/products` (Tab 1 "Explore" of Shell) | • Tap **"Explore"** in bottom navigation (or "Explore Products" on Dashboard).<br>• Displays all 4 tiered interest-bearing products with badges, annual interest rates, and descriptions.<br>• Tap "View Details" on any product to navigate to its dedicated detail view. |
+| **4** | **Savings Details Screen**<br>• Product Name, Interest Rate, Minimum Deposit (₦5,000), Duration<br>• "Create Savings" direct CTA | [product_details_screen.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/products/presentation/screens/product_details_screen.dart) | `/product/:id` (e.g. `/product/target-savings`) | • Tap any product card from the Explore Products list.<br>• Inspect the full benefits, minimum deposit requirement, interest rate, and terms.<br>• Tap **"Create Savings Plan"** to launch the creation flow with this product pre-selected. |
+| **5** | **Create Savings Screen**<br>• 5 Required fields: Savings Name, Product Type (Dropdown), Target Amount, Monthly Contribution, Duration (Dropdown)<br>• All fields required validation<br>• On Success: "Savings Created Successfully"<br>• Return to Dashboard | [create_savings_screen.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/savings/presentation/screens/create_savings_screen.dart)<br>[create_savings_notifier.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/savings/presentation/notifiers/create_savings_notifier.dart) | `/create` (Full-screen modal over shell) | • Tap "Create Savings" on Dashboard quick actions or the green `(+)` button on My Savings.<br>• Observe real-time currency formatting with thousands separators as you type.<br>• Submit with empty fields to verify inline validation.<br>• Complete fields and tap "Create Savings Plan": verifies green "Savings Created Successfully" SnackBar, immediate SQLite & SharedPreferences write, and seamless return to Dashboard. |
+| **6** | **My Savings / Active Plans Screen**<br>• Active savings plans portfolio overview<br>• Total target goal vs. current accumulated<br>• Plan cards with progress bars and contribution frequency | [savings_plans_screen.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/savings/presentation/screens/savings_plans_screen.dart)<br>[savings_plan_card.dart](file:///Users/Chris/magic/koins_savings_app/lib/widgets/savings/savings_plan_card.dart) | `/my-savings` (Tab 2 "My Savings" of Shell) | • Tap **"My Savings"** in the bottom navigation (or "View All" on Dashboard).<br>• Displays total target goal (₦3,500,000), current accumulated (₦550,000), and all 5 active savings plans with linear progress indicators (0% to 24% reached).<br>• Tap the top-right green `(+)` icon to create an additional savings plan. |
+| **7** | **Profile Screen & Logout**<br>• Full Name, Email, Phone Number<br>• Working Logout Button returning to Login | [profile_screen.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/auth/presentation/screens/profile_screen.dart) | `/profile` (Tab 3 "More" of Shell) | • Tap **"More"** in the bottom navigation.<br>• Displays customer avatar, full name (John Doe), email (`test@bank.com`), and phone number (`+234 801 234 5678`).<br>• Tap **"Log Out"**: verifies disk session clearance in `shared_preferences` and immediate navigation back to `/login`. |
+| **8** | **REST API Integration**<br>• Public mock API (`dummyjson.com`)<br>• Live dataset consumption & display | [dummy_posts_repository.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/dashboard/data/repositories/dummy_posts_repository.dart)<br>[dashboard_posts_section.dart](file:///Users/Chris/magic/koins_savings_app/lib/features/dashboard/presentation/widgets/dashboard_posts_section.dart) | `/dashboard` (Bottom section) | • Scroll down on the Dashboard below Recent Savings Plans.<br>• Displays live posts fetched from `https://dummyjson.com/posts?limit=3` under **"Posts from Dummy JSON"**.<br>• Inspect tag badges, view counters, shimmer skeleton loading during fetch, and error retry state if offline. |
+| **9** | **Local Storage Strategy**<br>• Persist logged-in user<br>• Persist created savings plans<br>• `shared_preferences` & SQLite | [shared_prefs_service.dart](file:///Users/Chris/magic/koins_savings_app/lib/services/storage/shared_prefs_service.dart)<br>[app_database.dart](file:///Users/Chris/magic/koins_savings_app/lib/services/database/app_database.dart) | Disk & Database Layer | • Log in, create a savings plan, and kill/restart the app.<br>• The user session persists seamlessly, and created plans remain saved in both SQLite `savings_plans` and JSON-serialized SharedPreferences. |
+
+---
+
+## Robust Product Experience Enhancements
+
+Beyond the baseline requirements in the assessment brief, several enterprise-grade engineering enhancements were incorporated to ensure a resilient, delightful, and robust fintech user experience:
+
+1. **Staggered Animated Rolling Number Counter**:
+   - The total savings balance (`₦850,000`) on the dashboard doesn't just appear statically; it features a custom, staggered rolling-digit animation implemented in [`StaggeredRollingNumber`](file:///Users/Chris/magic/koins_savings_app/lib/widgets/common/staggered_rolling_number.dart). Digits roll into place sequentially from left to right, providing immediate visual feedback of active financial calculation.
+
+2. **Persistent Bottom Navigation Shell (`go_router`)**:
+   - Configured with `StatefulShellRoute.indexedStack` ([MainShellScreen](file:///Users/Chris/magic/koins_savings_app/lib/core/router/main_shell_screen.dart)). Unlike standard `BottomNavigationBar` setups that recreate screens on tap, this architecture maintains separate navigation stacks for all 4 tabs. Users never lose their scroll position or intermediate form input when switching between tabs.
+
+3. **Dynamic Real-Time Naira Input Formatter (`NairaInputFormatter`)**:
+   - Built a custom `TextInputFormatter` ([`naira_input_formatter.dart`](file:///Users/Chris/magic/koins_savings_app/lib/core/utils/naira_input_formatter.dart)) for currency inputs. It automatically formats numbers with Nigerian Naira formatting and comma-grouping (e.g. typing `100000` automatically renders `₦100,000`), accurately adjusting text selection cursors to prevent input jumps.
+
+4. **Strict Sealed Class UI States & Zero `setState`**:
+   - Follows modern Riverpod 2.0+ sealed class hierarchies (`Initial`, `Loading`, `Loaded`, `Error`). Every UI component uses compile-time exhaustive pattern matching. Zero screen widgets invoke `setState()`, eliminating race conditions, UI flickering, and loose boolean flags (`isLoading = true`).
+
+5. **Fault-Tolerant Network Segregation**:
+   - External mock REST API consumption (`https://dummyjson.com/posts?limit=3`) is cleanly segregated from internal banking database queries. If the external internet connection drops or DummyJSON throttles requests, local banking operations (checking balances, viewing plans, creating new savings) continue functioning completely unimpeded.
+
+6. **Animated Shimmer Skeletons (`AppShimmer`)**:
+   - Replaced basic circular progress spinners with custom grey-to-silver shimmer skeleton loaders ([`app_shimmer.dart`](file:///Users/Chris/magic/koins_savings_app/lib/widgets/common/app_shimmer.dart)) matching the exact geometry of cards and post items for fluid perceived performance.
+
+7. **Native Pull-to-Refresh**:
+   - Integrated `RefreshIndicator` on the Dashboard screen. Swiping down dispatches background refreshes to recalculate account balances, re-query recent plans from SQLite, and re-fetch live DummyJSON posts with tactile haptic feedback.
+
+8. **One-Tap Test Credential Auto-Fill**:
+   - Added an evaluator convenience button on the Login screen that automatically populates the assessment's test credentials (`test@bank.com` / `Password123`) in a single tap, speeding up manual testing.
+
+9. **Comprehensive 95-Test Automated Suite**:
+   - Authored 95 automated unit and widget tests covering all repositories, sealed state transitions, validation formatters, screen renders, and form submissions with a 100% green pass rate.
 
 ---
 
