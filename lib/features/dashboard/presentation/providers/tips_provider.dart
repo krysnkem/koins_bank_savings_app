@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../data/repositories/dashboard_repository.dart';
+import '../../data/repositories/tips_repository.dart';
 import 'tips_state.dart';
 
 export 'tips_state.dart';
@@ -10,18 +10,18 @@ final tipsNotifierProvider =
     NotifierProvider.autoDispose<TipsNotifier, TipsState>(TipsNotifier.new);
 
 class TipsNotifier extends AutoDisposeNotifier<TipsState> {
-  late final DashboardRepository _dashboard;
+  late final TipsRepository _tipsRepository;
 
   @override
   TipsState build() {
-    _dashboard = ref.watch(tipsRepositoryProvider);
+    _tipsRepository = ref.watch(tipsRepositoryProvider);
     return const TipsInitial();
   }
 
   Future<void> load() async {
     state = const TipsLoading();
     try {
-      final tips = await _dashboard.getTips();
+      final tips = await _tipsRepository.getTips();
       state = TipsLoaded(tips);
     } catch (e) {
       if (e is AppException) {

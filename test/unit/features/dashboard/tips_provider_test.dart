@@ -2,10 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:koins_savings_app/core/errors/app_exception.dart';
 import 'package:koins_savings_app/features/dashboard/data/models/financial_tip.dart';
-import 'package:koins_savings_app/features/dashboard/data/repositories/dashboard_repository.dart';
+import 'package:koins_savings_app/features/dashboard/data/repositories/tips_repository.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/providers/tips_provider.dart';
 
-class MockDashboardRepository implements DashboardRepository {
+class MockTipsRepository implements TipsRepository {
   bool shouldFail = false;
   List<FinancialTip> mockTips = const [
     FinancialTip(
@@ -27,13 +27,13 @@ class MockDashboardRepository implements DashboardRepository {
 void main() {
   group('TipsNotifier & TipsState', () {
     late ProviderContainer container;
-    late MockDashboardRepository mockDashboardRepository;
+    late MockTipsRepository mockTipsRepository;
 
     setUp(() {
-      mockDashboardRepository = MockDashboardRepository();
+      mockTipsRepository = MockTipsRepository();
       container = ProviderContainer(
         overrides: [
-          tipsRepositoryProvider.overrideWithValue(mockDashboardRepository),
+          tipsRepositoryProvider.overrideWithValue(mockTipsRepository),
         ],
       );
     });
@@ -63,7 +63,7 @@ void main() {
     });
 
     test('load sets TipsError on repository failure', () async {
-      mockDashboardRepository.shouldFail = true;
+      mockTipsRepository.shouldFail = true;
       final notifier = container.read(tipsNotifierProvider.notifier);
       final states = <TipsState>[];
 

@@ -69,9 +69,11 @@ Future<List<FinancialTip>> getFinancialTips()
 ## 3. Tips + dashboard repository
 
 - Abstract `TipsRemoteDataSource` / concrete `TipsRemoteDataSourceImpl(BackendService)`.
-- Abstract `DashboardRepository` / concrete `DashboardRepositoryImpl`.
-- Recent plans come from `SavingsRepository`, not from the tips source.
-- `DashboardNotifier` is concrete and takes those two repository abstractions. There is no notifier abstraction.
+- Abstract `TipsRepository` / concrete `TipsRepositoryImpl(TipsRemoteDataSource)`.
+- Abstract `DashboardRepository` / concrete `DashboardRepositoryImpl(SavingsRepository, TipsRepository)`.
+- `TipsNotifier` consumes `TipsRepository`.
+- `DashboardNotifier` consumes `DashboardRepository` which aggregates plans and tips into `DashboardData`.
+
 
 ---
 

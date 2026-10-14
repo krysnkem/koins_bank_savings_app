@@ -1,9 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../savings/data/models/savings_plan.dart';
-import '../../../savings/data/repositories/savings_repository.dart';
-import '../../data/models/financial_tip.dart';
 import '../../data/repositories/dashboard_repository.dart';
 import 'dashboard_state.dart';
 
@@ -16,35 +13,22 @@ final dashboardNotifierProvider =
 );
 
 class DashboardNotifier extends AutoDisposeNotifier<DashboardState> {
-  late final DashboardRepository _dashboard;
-  late final SavingsRepository _savings;
+  late final DashboardRepository _dashboardRepository;
 
   @override
   DashboardState build() {
-    _dashboard = ref.watch(dashboardRepositoryProvider);
-    _savings = ref.watch(savingsRepositoryProvider);
+    _dashboardRepository = ref.watch(dashboardRepositoryProvider);
     return const DashboardInitial();
   }
 
   Future<void> load() async {
     state = const DashboardLoading();
     try {
-      final results = await Future.wait([
-        _savings.getPlans(),
-        _dashboard.getTips().catchError((_) => <FinancialTip>[]),
-      ]);
-
-      final allPlans = results[0] as List<SavingsPlan>;
-      final tips = results[1] as List<FinancialTip>;
-      final totalSavings = allPlans.fold<double>(
-        0.0,
-        (sum, p) => sum + p.amount,
-      );
-
+      final data = await _dashboardRepository.getDashboardData();
       state = DashboardLoaded(
-        totalSavings: totalSavings,
-        recentPlans: allPlans.take(3).toList(),
-        tips: tips,
+        totalSavings: data.totalSavings,
+        recentPlans: data.recentPlans,
+        tips: data.tips,
       );
     } catch (e) {
       if (e is AppException) {
