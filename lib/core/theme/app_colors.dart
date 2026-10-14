@@ -53,7 +53,12 @@ class AppColors {
 
   // Shadows & Overlays
   static const Color shadow = Color(0x10000000);
-  static const Color cardShadow = Color(0x0A001D0B);
+  static const Color shadowLight = Color(0x0A000000); // 4% black ambient
+  static const Color shadowMedium = Color(0x12000000); // 7% black ambient
+  static const Color cardShadow = Color(0x0A001D0B); // 4% forest black ambient
+  static const Color cardShadowSubtle = Color(0x08001D0B); // 3% forest black subtle
+  static const Color primaryGlow = Color(0x180B9234); // 9% emerald glow for avatars/badges
+  static const Color buttonShadow = Color(0x250B9234); // 15% emerald button shadow
   static const Color disabled = Color(0xFF94A3B8);
 
   // Logo & Emblem Facet Palette

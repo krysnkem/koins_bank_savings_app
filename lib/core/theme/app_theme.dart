@@ -7,6 +7,7 @@ import 'app_spacing.dart';
 
 export 'app_colors.dart';
 export 'app_radius.dart';
+export 'app_shadows.dart';
 export 'app_spacing.dart';
 export 'app_text_styles.dart';
 
@@ -57,8 +58,8 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         centerTitle: false,
         titleTextStyle: GoogleFonts.inter(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
         ),
         systemOverlayStyle: const SystemUiOverlayStyle(
