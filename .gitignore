@@ -56,5 +56,13 @@ coverage/
 .fvm/*
 !.fvm/fvm_config.json
 
-# Screenshots / Visual testing artifacts
-screenshots/
+# Screenshots / Visual testing artifacts (Showcase images whitelisted for repository deliverables)
+screenshots/*
+!screenshots/08_gorouter_login.png
+!screenshots/09_gorouter_dashboard.png
+!screenshots/10_gorouter_savings_tab.png
+!screenshots/100_my_savings_active_plans.png
+!screenshots/12_gorouter_more_tab.png
+!screenshots/14_gorouter_create_savings.png
+!screenshots/67_duration_dropdown_open.png
+!screenshots/88_savings_created_result.png

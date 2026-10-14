@@ -4,7 +4,7 @@ A high-performance fintech mobile savings application built for the **Koins MFB 
 
 > **Flutter Version**: Flutter 3.29.x (Dart 3.7.x) / Stable  
 > **Target Platforms**: Android (API 21+) & iOS (iOS 13+)  
-> **Pre-built APK**: [`apk/app-release.apk`](./apk/app-release.apk) (Production Release)  
+> **Pre-built APK**: [Download via GitHub Releases](https://github.com/krysnkem/koins_bank_savings_app/releases/latest/download/app-release.apk) or locally at [`apk/app-release.apk`](./apk/app-release.apk)  
 > **Test Coverage**: 95 Automated Unit & Widget Tests (100% Green)
 
 ---
@@ -300,9 +300,11 @@ fvm flutter test
 fvm flutter run
 ```
 
-### APK Binaries
-A pre-built release APK is included with the submission:
-- **Root Release APK**: [`apk/app-release.apk`](./apk/app-release.apk) (~58 MB production release)
+### APK Binaries & GitHub Releases
+A pre-built production release APK is provided for evaluators:
+- **GitHub Release Direct Download**: [app-release.apk (Latest v1.0.0)](https://github.com/krysnkem/koins_bank_savings_app/releases/latest/download/app-release.apk)
+- **GitHub Releases Page**: [https://github.com/krysnkem/koins_bank_savings_app/releases](https://github.com/krysnkem/koins_bank_savings_app/releases)
+- **Local Repository Asset**: [`apk/app-release.apk`](./apk/app-release.apk) (~58 MB production release, tree-shaken)
 - **Build Output Path**: `build/app/outputs/flutter-apk/app-release.apk`
 
 To compile binaries locally:
@@ -319,9 +321,9 @@ fvm flutter build apk --debug
 ## Screenshots & Visual Showcase
 
 ### Persistent Shell & Tab Navigation (`go_router`)
-| 1. Dashboard Tab | 2. Savings Products Tab | 3. My Savings Tab | 4. More / Profile Tab |
+| 1. Dashboard Tab | 2. Savings Products Tab | 3. My Savings (Active Goals) | 4. More / Profile Tab |
 | :---: | :---: | :---: | :---: |
-| <img src="screenshots/09_gorouter_dashboard.png" width="200" alt="Dashboard Screen" /> | <img src="screenshots/10_gorouter_savings_tab.png" width="200" alt="Savings Products Screen" /> | <img src="screenshots/54_my_savings_tab.png" width="200" alt="My Savings Screen" /> | <img src="screenshots/12_gorouter_more_tab.png" width="200" alt="Profile Screen" /> |
+| <img src="screenshots/09_gorouter_dashboard.png" width="200" alt="Dashboard Screen" /> | <img src="screenshots/10_gorouter_savings_tab.png" width="200" alt="Savings Products Screen" /> | <img src="screenshots/100_my_savings_active_plans.png" width="200" alt="My Savings Screen" /> | <img src="screenshots/12_gorouter_more_tab.png" width="200" alt="Profile Screen" /> |
 
 ### Form Flows & Interactive States
 | 5. Create Savings Plan | 6. Duration Dropdown Open | 7. Plan Created Feedback | 8. Login Authentication |
@@ -338,10 +340,21 @@ fvm flutter build apk --debug
 3. **Device Form Factor**: Optimized for portrait mobile viewports across standard iOS and Android screen resolutions.
 
 ### Future Improvements (Given More Time)
-1. **Biometric & PIN Authentication**: Integrate `local_auth` for Face ID, Touch ID, and custom PIN entry.
-2. **Comprehensive Dark Mode**: Implement dark color palette tokens within `AppTheme` with auto system detection.
-3. **Product Search & Filtering**: Add search bar filtering and interest rate sorting on the Savings Products screen.
-4. **End-to-End Integration Tests**: Add Flutter Driver / `integration_test` automation testing full multi-screen user onboarding flows.
+
+1. **Interactive Savings Funding & Transfer Simulation Screen (Directly from "My Savings")**:
+   - **Direct Transfer Simulation**: Add a dedicated **"Transfer / Deposit Funds"** modal flow accessible directly from the **My Savings** screen.
+   - **Inflow to Koins App**: Simulate instant inter-bank or debit card transfers directly into the customer's Koins savings wallet, crediting their account.
+   - **Goal-Specific Funding Allocation**: Enable users to select any active savings plan (e.g. *American Savings*, *Emergency Fund*, or *House Savings Plan*) and allocate simulated deposits toward that goal.
+   - **Dynamic Portfolio Recalculation**:
+     - Automatically recalculates the **"Current Accumulated"** portfolio counter in real time (e.g., advancing from ₦550,000 toward the ₦3,500,000 total target goal).
+     - Dynamically updates the linear progress indicator and percentage badge (e.g., advancing from 0% to 24%, 50%, or 100% reached).
+     - Persists an immutable transaction record in the SQLite `transactions` table (with category *Deposit / Transfer*, timestamp, and credit status).
+   - **Interest & Yield Simulation**: Real-time projection calculator showing accumulated annual interest earnings based on product rates (8%–18% p.a.) over the selected tenure.
+
+2. **Biometric & PIN Authentication**: Integrate `local_auth` for Face ID, Touch ID, and custom PIN entry.
+3. **Comprehensive Dark Mode**: Implement dark color palette tokens within `AppTheme` with auto system detection.
+4. **Product Search & Filtering**: Add search bar filtering and interest rate sorting on the Savings Products screen.
+5. **End-to-End Integration Tests**: Add Flutter Driver / `integration_test` automation testing full multi-screen user onboarding flows.
 
 ---
 
@@ -360,5 +373,5 @@ fvm flutter build apk --debug
 - [x] **Design System & Material 3**: 100% tokenized color palette, radius, spacing, typography (Inter), and elevation.
 - [x] **Automated Tests**: 95 automated unit and widget tests passing with 100% green bar.
 - [x] **Static Analysis**: `flutter analyze` with 0 warnings and 0 errors.
-- [x] **Pre-built APK**: Available at [`apk/app-release.apk`](./apk/app-release.apk).
-- [x] **Comprehensive README**: Architecture explanation, setup guide, packages table, assumptions, and screenshots showcase.
+- [x] **Pre-built APK**: Available at [`apk/app-release.apk`](./apk/app-release.apk) and on [GitHub Releases](https://github.com/krysnkem/koins_bank_savings_app/releases).
+- [x] **Comprehensive README**: Architecture explanation, setup guide, packages table, assumptions, future improvements, and screenshots showcase.
