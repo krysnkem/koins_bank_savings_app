@@ -1,3 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../services/backend_provider.dart';
 import '../datasources/savings_local_data_source.dart';
 import '../datasources/savings_remote_data_source.dart';
 import '../models/savings_plan.dart';
@@ -54,3 +57,10 @@ class SavingsRepositoryImpl implements SavingsRepository {
     return plan;
   }
 }
+
+final savingsRepositoryProvider = Provider<SavingsRepository>((ref) {
+  return SavingsRepositoryImpl(
+    remoteDataSource: SavingsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
+    localDataSource: SavingsLocalDataSourceImpl(),
+  );
+});

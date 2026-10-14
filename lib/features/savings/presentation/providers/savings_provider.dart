@@ -1,45 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/backend_provider.dart';
-import '../../data/datasources/savings_local_data_source.dart';
-import '../../data/datasources/savings_remote_data_source.dart';
 import '../../data/models/savings_plan.dart';
 import '../../data/repositories/savings_repository.dart';
+import 'savings_state.dart';
 
-sealed class SavingsState {
-  const SavingsState();
-}
-
-class SavingsInitial extends SavingsState {
-  const SavingsInitial();
-}
-
-class SavingsLoading extends SavingsState {
-  const SavingsLoading();
-}
-
-class SavingsLoaded extends SavingsState {
-  final List<SavingsPlan> plans;
-  const SavingsLoaded(this.plans);
-}
-
-class SavingsCreated extends SavingsState {
-  final SavingsPlan plan;
-  const SavingsCreated(this.plan);
-}
-
-class SavingsError extends SavingsState {
-  final String message;
-  const SavingsError(this.message);
-}
-
-final savingsRepositoryProvider = Provider<SavingsRepository>((ref) {
-  return SavingsRepositoryImpl(
-    remoteDataSource: SavingsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
-    localDataSource: SavingsLocalDataSourceImpl(),
-  );
-});
+export 'savings_state.dart';
 
 final savingsNotifierProvider =
     NotifierProvider<SavingsNotifier, SavingsState>(SavingsNotifier.new);
@@ -65,7 +31,9 @@ class SavingsNotifier extends Notifier<SavingsState> {
       if (e is AppException) {
         state = SavingsError(e.message);
       } else {
-        state = SavingsError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+        state = SavingsError(
+          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
+        );
       }
     }
   }
@@ -93,7 +61,9 @@ class SavingsNotifier extends Notifier<SavingsState> {
       if (e is AppException) {
         state = SavingsError(e.message);
       } else {
-        state = SavingsError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+        state = SavingsError(
+          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
+        );
       }
       return null;
     }

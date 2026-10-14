@@ -1,3 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../services/backend_provider.dart';
 import '../datasources/products_remote_data_source.dart';
 import '../models/savings_product.dart';
 
@@ -23,3 +26,9 @@ class ProductsRepositoryImpl implements ProductsRepository {
     return _remote.getProductById(id);
   }
 }
+
+final productsRepositoryProvider = Provider<ProductsRepository>((ref) {
+  return ProductsRepositoryImpl(
+    remoteDataSource: ProductsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
+  );
+});

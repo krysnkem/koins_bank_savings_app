@@ -1,3 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../services/backend_provider.dart';
 import '../datasources/auth_local_data_source.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../models/auth_user.dart';
@@ -50,3 +53,10 @@ class AuthRepositoryImpl implements AuthRepository {
     return _local.isLoggedIn();
   }
 }
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepositoryImpl(
+    remoteDataSource: AuthRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
+    localDataSource: AuthLocalDataSourceImpl(),
+  );
+});

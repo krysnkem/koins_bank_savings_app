@@ -1,44 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/backend_provider.dart';
-import '../../data/datasources/auth_local_data_source.dart';
-import '../../data/datasources/auth_remote_data_source.dart';
-import '../../data/models/auth_user.dart';
 import '../../data/repositories/auth_repository.dart';
+import 'auth_state.dart';
 
-sealed class AuthState {
-  const AuthState();
-}
-
-class AuthInitial extends AuthState {
-  const AuthInitial();
-}
-
-class AuthLoading extends AuthState {
-  const AuthLoading();
-}
-
-class AuthAuthenticated extends AuthState {
-  final AuthUser user;
-  const AuthAuthenticated(this.user);
-}
-
-class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
-}
-
-class AuthError extends AuthState {
-  final String message;
-  const AuthError(this.message);
-}
-
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepositoryImpl(
-    remoteDataSource: AuthRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
-    localDataSource: AuthLocalDataSourceImpl(),
-  );
-});
+export 'auth_state.dart';
 
 final authNotifierProvider =
     NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
@@ -62,7 +28,9 @@ class AuthNotifier extends Notifier<AuthState> {
       if (e is AppException) {
         state = AuthError(e.message);
       } else {
-        state = AuthError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+        state = AuthError(
+          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
+        );
       }
     }
   }

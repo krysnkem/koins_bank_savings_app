@@ -1,50 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/backend_provider.dart';
 import '../../../savings/data/models/savings_plan.dart';
 import '../../../savings/data/repositories/savings_repository.dart';
-import '../../../savings/presentation/providers/savings_provider.dart';
-import '../../data/datasources/tips_remote_data_source.dart';
 import '../../data/models/financial_tip.dart';
 import '../../data/repositories/dashboard_repository.dart';
+import 'dashboard_state.dart';
 
+export 'dashboard_state.dart';
 export 'tips_provider.dart';
-
-sealed class DashboardState {
-  const DashboardState();
-}
-
-class DashboardInitial extends DashboardState {
-  const DashboardInitial();
-}
-
-class DashboardLoading extends DashboardState {
-  const DashboardLoading();
-}
-
-class DashboardLoaded extends DashboardState {
-  final double totalSavings;
-  final List<SavingsPlan> recentPlans;
-  final List<FinancialTip> tips;
-
-  const DashboardLoaded({
-    required this.totalSavings,
-    required this.recentPlans,
-    required this.tips,
-  });
-}
-
-class DashboardError extends DashboardState {
-  final String message;
-  const DashboardError(this.message);
-}
-
-final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
-  return DashboardRepositoryImpl(
-    tipsDataSource: TipsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
-  );
-});
 
 final dashboardNotifierProvider =
     NotifierProvider.autoDispose<DashboardNotifier, DashboardState>(
@@ -86,7 +50,9 @@ class DashboardNotifier extends AutoDisposeNotifier<DashboardState> {
       if (e is AppException) {
         state = DashboardError(e.message);
       } else {
-        state = DashboardError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+        state = DashboardError(
+          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
+        );
       }
     }
   }

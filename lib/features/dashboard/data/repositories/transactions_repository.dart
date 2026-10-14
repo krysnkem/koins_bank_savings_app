@@ -1,3 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../services/backend_provider.dart';
 import '../datasources/transactions_remote_data_source.dart';
 import '../models/transaction_item.dart';
 
@@ -15,3 +18,11 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
   @override
   Future<List<TransactionItem>> getTransactions() => _remote.getTransactions();
 }
+
+final transactionsRepositoryProvider = Provider<TransactionsRepository>((ref) {
+  return TransactionsRepositoryImpl(
+    remoteDataSource: TransactionsRemoteDataSourceImpl(
+      ref.watch(backendServiceProvider),
+    ),
+  );
+});

@@ -1,38 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/backend_provider.dart';
-import '../../data/datasources/tips_remote_data_source.dart';
-import '../../data/models/financial_tip.dart';
 import '../../data/repositories/dashboard_repository.dart';
+import 'tips_state.dart';
 
-sealed class TipsState {
-  const TipsState();
-}
-
-class TipsInitial extends TipsState {
-  const TipsInitial();
-}
-
-class TipsLoading extends TipsState {
-  const TipsLoading();
-}
-
-class TipsLoaded extends TipsState {
-  final List<FinancialTip> tips;
-  const TipsLoaded(this.tips);
-}
-
-class TipsError extends TipsState {
-  final String message;
-  const TipsError(this.message);
-}
-
-final tipsRepositoryProvider = Provider<DashboardRepository>((ref) {
-  return DashboardRepositoryImpl(
-    tipsDataSource: TipsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
-  );
-});
+export 'tips_state.dart';
 
 final tipsNotifierProvider =
     NotifierProvider.autoDispose<TipsNotifier, TipsState>(TipsNotifier.new);

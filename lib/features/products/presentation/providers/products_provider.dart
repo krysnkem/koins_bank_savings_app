@@ -1,38 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/backend_provider.dart';
-import '../../data/datasources/products_remote_data_source.dart';
 import '../../data/models/savings_product.dart';
 import '../../data/repositories/products_repository.dart';
+import 'products_state.dart';
 
-sealed class ProductsState {
-  const ProductsState();
-}
-
-class ProductsInitial extends ProductsState {
-  const ProductsInitial();
-}
-
-class ProductsLoading extends ProductsState {
-  const ProductsLoading();
-}
-
-class ProductsLoaded extends ProductsState {
-  final List<SavingsProduct> products;
-  const ProductsLoaded(this.products);
-}
-
-class ProductsError extends ProductsState {
-  final String message;
-  const ProductsError(this.message);
-}
-
-final productsRepositoryProvider = Provider<ProductsRepository>((ref) {
-  return ProductsRepositoryImpl(
-    remoteDataSource: ProductsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
-  );
-});
+export 'products_state.dart';
 
 final productsNotifierProvider =
     NotifierProvider<ProductsNotifier, ProductsState>(ProductsNotifier.new);
@@ -55,7 +28,9 @@ class ProductsNotifier extends Notifier<ProductsState> {
       if (e is AppException) {
         state = ProductsError(e.message);
       } else {
-        state = ProductsError(e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''));
+        state = ProductsError(
+          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
+        );
       }
     }
   }

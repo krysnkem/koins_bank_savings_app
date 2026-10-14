@@ -1,45 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/backend_provider.dart';
-import '../../data/datasources/transactions_remote_data_source.dart';
-import '../../data/models/transaction_item.dart';
 import '../../data/repositories/transactions_repository.dart';
+import 'transactions_state.dart';
 
-sealed class TransactionsState {
-  const TransactionsState();
-}
-
-class TransactionsInitial extends TransactionsState {
-  const TransactionsInitial();
-}
-
-class TransactionsLoading extends TransactionsState {
-  const TransactionsLoading();
-}
-
-class TransactionsLoaded extends TransactionsState {
-  final List<TransactionItem> transactions;
-  final double totalInflow;
-
-  const TransactionsLoaded({
-    required this.transactions,
-    required this.totalInflow,
-  });
-}
-
-class TransactionsError extends TransactionsState {
-  final String message;
-  const TransactionsError(this.message);
-}
-
-final transactionsRepositoryProvider = Provider<TransactionsRepository>((ref) {
-  return TransactionsRepositoryImpl(
-    remoteDataSource: TransactionsRemoteDataSourceImpl(
-      ref.watch(backendServiceProvider),
-    ),
-  );
-});
+export 'transactions_state.dart';
 
 final transactionsNotifierProvider =
     NotifierProvider.autoDispose<TransactionsNotifier, TransactionsState>(

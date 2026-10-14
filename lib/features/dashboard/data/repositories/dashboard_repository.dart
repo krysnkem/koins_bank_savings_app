@@ -1,3 +1,6 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../services/backend_provider.dart';
 import '../datasources/tips_remote_data_source.dart';
 import '../models/financial_tip.dart';
 
@@ -17,3 +20,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
     return _tips.getFinancialTips();
   }
 }
+
+final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
+  return DashboardRepositoryImpl(
+    tipsDataSource: TipsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
+  );
+});
+
+/// Alias for backwards compatibility with tips domain consumers
+final tipsRepositoryProvider = dashboardRepositoryProvider;
