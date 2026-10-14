@@ -3,14 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/session/ui_session.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../widgets/common/app_logo.dart';
 import '../../../../widgets/common/app_text_field.dart';
 import '../../../../widgets/common/primary_button.dart';
-import '../providers/auth_provider.dart';
+import '../providers/login_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -23,8 +22,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController(text: AppConstants.mockEmail);
   final _password = TextEditingController(text: AppConstants.mockPassword);
-  bool _obscure = true;
-  bool _loading = false;
 
   @override
   void dispose() {
@@ -33,37 +30,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    debugPrint('LOGIN _submit triggered: email="${_email.text}", password="${_password.text}"');
-    if (!_formKey.currentState!.validate()) {
-      debugPrint('LOGIN validation failed');
-      return;
-    }
-    setState(() => _loading = true);
-
-    await ref.read(authNotifierProvider.notifier).login(
-          _email.text.trim(),
-          _password.text,
+  void _submit() {
+    debugPrint(
+      'LOGIN _submit triggered: email="${_email.text}", password="${_password.text}"',
+    );
+    ref.read(loginNotifierProvider.notifier).submit(
+          formKey: _formKey,
+          email: _email.text,
+          password: _password.text,
         );
-    final authState = ref.read(authNotifierProvider);
-    if (authState is AuthError) {
-      if (!mounted) return;
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(authState.message)));
-      return;
-    }
-
-    await ref.read(uiSessionProvider.notifier).login(
-          _email.text,
-          _password.text,
-        );
-    if (!mounted) return;
-    setState(() => _loading = false);
-    context.go('/dashboard');
   }
 
   @override
   Widget build(BuildContext context) {
+    final loginState = ref.watch(loginNotifierProvider);
+
+    ref.listen<LoginState>(loginNotifierProvider, (previous, next) {
+      if (next is LoginError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.message),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      } else if (next is LoginSuccess) {
+        context.go('/dashboard');
+      }
+    });
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -78,7 +72,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: AppSpacing.xxl),
                 const AppLogo(height: 72),
                 const SizedBox(height: AppSpacing.xl),
-                Text('Welcome Back', style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  'Welcome Back',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Sign in to continue to Koins',
@@ -92,19 +89,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   label: 'Email Address',
                   hint: 'test@bank.com',
                   keyboardType: TextInputType.emailAddress,
-                  prefix: const Icon(Icons.email_outlined, color: AppColors.primary),
+                  prefix: const Icon(
+                    Icons.email_outlined,
+                    color: AppColors.primary,
+                  ),
                   validator: Validators.email,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppTextField(
                   controller: _password,
                   label: 'Password',
-                  obscureText: _obscure,
-                  prefix: const Icon(Icons.lock_outline, color: AppColors.primary),
+                  obscureText: loginState.obscurePassword,
+                  prefix:
+                      const Icon(Icons.lock_outline, color: AppColors.primary),
                   suffix: IconButton(
-                    onPressed: () => setState(() => _obscure = !_obscure),
+                    onPressed: () => ref
+                        .read(loginNotifierProvider.notifier)
+                        .togglePasswordVisibility(),
                     icon: Icon(
-                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      loginState.obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -127,7 +132,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                PrimaryButton(label: 'Login', loading: _loading, onPressed: _submit),
+                PrimaryButton(
+                  label: 'Login',
+                  loading: loginState.isLoading,
+                  onPressed: _submit,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -152,3 +161,4 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
+

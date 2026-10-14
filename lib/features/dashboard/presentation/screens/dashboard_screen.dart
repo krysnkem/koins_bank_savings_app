@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/session/ui_session.dart';
@@ -15,54 +12,14 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../widgets/common/empty_state.dart';
 import '../../../../widgets/common/error_state.dart';
+import '../providers/dashboard_provider.dart';
 
-class DashboardScreen extends ConsumerStatefulWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  List<({String title, String body})> _tips = [];
-  bool _loadingTips = true;
-  String? _tipsError;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTips();
-  }
-
-  Future<void> _loadTips() async {
-    setState(() {
-      _loadingTips = true;
-      _tipsError = null;
-    });
-    // EXPECTATION: MockBackendService.getFinancialTips → GET dummyjson.com/posts?limit=3.
-    try {
-      final res = await http.get(Uri.parse('${AppConstants.baseUrl}/posts?limit=3'));
-      if (res.statusCode != 200) throw Exception('tips');
-      final data = jsonDecode(res.body) as Map<String, dynamic>;
-      final posts = (data['posts'] as List).cast<Map<String, dynamic>>();
-      if (!mounted) return;
-      setState(() {
-        _tips = posts
-            .map((p) => (title: p['title'] as String, body: p['body'] as String))
-            .toList();
-        _loadingTips = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _loadingTips = false;
-        _tipsError = "Couldn't load tips. Check your connection.";
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardState = ref.watch(dashboardNotifierProvider);
     final plans = ref.watch(uiSessionProvider).plans.take(3).toList();
     final icons = [Icons.shield_outlined, Icons.home_outlined, Icons.school_outlined];
 
@@ -230,20 +187,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
           ),
           const SizedBox(height: AppSpacing.md),
-          if (_loadingTips)
+          if (dashboardState is DashboardLoading || dashboardState is DashboardInitial)
             const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          else if (_tipsError != null)
-            ErrorState(message: _tipsError!, onRetry: _loadTips)
-          else ...[
+          else if (dashboardState is DashboardError)
+            ErrorState(
+              message: dashboardState.message,
+              onRetry: () => ref.read(dashboardNotifierProvider.notifier).load(),
+            )
+          else if (dashboardState is DashboardLoaded) ...[
             () {
               const tipIcons = [
                 Icons.lightbulb_outline,
                 Icons.track_changes,
                 Icons.savings_outlined,
               ];
+              final tips = dashboardState.tips;
               return Column(
                 children: [
-                  for (int i = 0; i < _tips.length; i++)
+                  for (int i = 0; i < tips.length; i++)
                     Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.md),
                       child: Container(
@@ -265,7 +226,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                             ),
                             title: Text(
-                              _tips[i].title,
+                              tips[i].title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -277,7 +238,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             subtitle: Padding(
                               padding: const EdgeInsets.only(top: 4.0),
                               child: Text(
-                                _tips[i].body,
+                                tips[i].body,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(

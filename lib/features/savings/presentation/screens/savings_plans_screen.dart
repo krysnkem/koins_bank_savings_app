@@ -13,19 +13,8 @@ import '../../../../widgets/common/empty_state.dart';
 import '../../data/models/savings_plan.dart';
 import '../providers/savings_provider.dart';
 
-class SavingsPlansScreen extends ConsumerStatefulWidget {
+class SavingsPlansScreen extends ConsumerWidget {
   const SavingsPlansScreen({super.key});
-
-  @override
-  ConsumerState<SavingsPlansScreen> createState() => _SavingsPlansScreenState();
-}
-
-class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() => ref.read(savingsNotifierProvider.notifier).load());
-  }
 
   IconData _iconForProduct(String productId) {
     switch (productId) {
@@ -43,7 +32,7 @@ class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(savingsNotifierProvider);
     final uiPlans = ref.watch(uiSessionProvider).plans;
     debugPrint('BUILD SavingsPlansScreen: state=$state, uiPlans=${uiPlans.length}');
@@ -91,10 +80,14 @@ class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
       body: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: () => ref.read(savingsNotifierProvider.notifier).load(),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          children: [
+        child: state is SavingsLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
+            : ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                children: [
                   // Portfolio Summary Card
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.cardPadding),

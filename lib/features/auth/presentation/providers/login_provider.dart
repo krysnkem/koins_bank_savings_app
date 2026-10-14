@@ -1,0 +1,90 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/session/ui_session.dart';
+import '../../data/models/auth_user.dart';
+import 'auth_provider.dart';
+
+sealed class LoginState {
+  final bool obscurePassword;
+  const LoginState({this.obscurePassword = true});
+
+  bool get isLoading => this is LoginLoading;
+}
+
+class LoginInitial extends LoginState {
+  const LoginInitial({super.obscurePassword = true});
+}
+
+class LoginLoading extends LoginState {
+  const LoginLoading({super.obscurePassword = true});
+}
+
+class LoginSuccess extends LoginState {
+  final AuthUser user;
+  const LoginSuccess(this.user, {super.obscurePassword = true});
+}
+
+class LoginError extends LoginState {
+  final String message;
+  const LoginError(this.message, {super.obscurePassword = true});
+}
+
+class LoginNotifier extends AutoDisposeNotifier<LoginState> {
+  @override
+  LoginState build() {
+    // Listen to AuthNotifier's state changes to dictate loading and result states
+    ref.listen<AuthState>(authNotifierProvider, (_, next) {
+      _syncFromAuthState(next);
+    });
+    // Sync current AuthState on initialization
+    final currentAuth = ref.read(authNotifierProvider);
+    return _stateFromAuth(currentAuth, obscurePassword: true);
+  }
+
+  LoginState _stateFromAuth(AuthState authState, {required bool obscurePassword}) {
+    return switch (authState) {
+      AuthLoading() => LoginLoading(obscurePassword: obscurePassword),
+      AuthAuthenticated(:final user) =>
+        LoginSuccess(user, obscurePassword: obscurePassword),
+      AuthError(:final message) =>
+        LoginError(message, obscurePassword: obscurePassword),
+      AuthInitial() || AuthUnauthenticated() =>
+        LoginInitial(obscurePassword: obscurePassword),
+    };
+  }
+
+  void _syncFromAuthState(AuthState authState) {
+    state = _stateFromAuth(authState, obscurePassword: state.obscurePassword);
+  }
+
+  void togglePasswordVisibility() {
+    final newObscure = !state.obscurePassword;
+    state = switch (state) {
+      LoginInitial() => LoginInitial(obscurePassword: newObscure),
+      LoginLoading() => LoginLoading(obscurePassword: newObscure),
+      LoginSuccess(:final user) =>
+        LoginSuccess(user, obscurePassword: newObscure),
+      LoginError(:final message) =>
+        LoginError(message, obscurePassword: newObscure),
+    };
+  }
+
+  Future<void> submit({
+    required GlobalKey<FormState> formKey,
+    required String email,
+    required String password,
+  }) async {
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+    await ref.read(authNotifierProvider.notifier).login(email.trim(), password);
+    final authState = ref.read(authNotifierProvider);
+    if (authState is AuthAuthenticated) {
+      await ref.read(uiSessionProvider.notifier).login(email, password);
+    }
+  }
+}
+
+final loginNotifierProvider =
+    NotifierProvider.autoDispose<LoginNotifier, LoginState>(LoginNotifier.new);

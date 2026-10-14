@@ -10,7 +10,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../widgets/common/app_text_field.dart';
 import '../../../../widgets/common/primary_button.dart';
-import '../providers/savings_provider.dart';
+import '../providers/create_savings_provider.dart';
 
 class CreateSavingsScreen extends ConsumerStatefulWidget {
   final String? productId;
@@ -18,7 +18,8 @@ class CreateSavingsScreen extends ConsumerStatefulWidget {
   const CreateSavingsScreen({super.key, this.productId});
 
   @override
-  ConsumerState<CreateSavingsScreen> createState() => _CreateSavingsScreenState();
+  ConsumerState<CreateSavingsScreen> createState() =>
+      _CreateSavingsScreenState();
 }
 
 class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
@@ -26,9 +27,6 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
   final _name = TextEditingController();
   final _target = TextEditingController();
   final _monthly = TextEditingController();
-  late String? _productId = widget.productId;
-  String? _duration;
-  bool _loading = false;
 
   @override
   void dispose() {
@@ -38,61 +36,48 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_productId == null || _duration == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select a product and duration')),
-      );
-      return;
-    }
-    setState(() => _loading = true);
-
-    final targetVal = double.parse(_target.text.replaceAll(',', ''));
-    final monthlyVal = double.parse(_monthly.text.replaceAll(',', ''));
-
-    final plan = await ref.read(savingsNotifierProvider.notifier).create(
-          name: _name.text.trim(),
-          productId: _productId!,
-          targetAmount: targetVal,
-          monthlyContribution: monthlyVal,
-          duration: _duration!,
+  void _submit() {
+    ref
+        .read(createSavingsNotifierProvider(widget.productId).notifier)
+        .submit(
+          formKey: _formKey,
+          name: _name.text,
+          targetText: _target.text,
+          monthlyText: _monthly.text,
         );
-
-    final product = productById(_productId!);
-    ref.read(uiSessionProvider.notifier).addPlan(
-          UiPlan(
-            id: plan?.id ?? 'plan-${DateTime.now().millisecondsSinceEpoch}',
-            name: _name.text.trim(),
-            productId: _productId!,
-            productName: product?.name ?? 'Savings Plan',
-            amount: 0,
-            targetAmount: targetVal,
-            monthlyContribution: monthlyVal,
-            frequency: 'Monthly',
-            duration: _duration!,
-          ),
-        );
-
-    if (!mounted) return;
-    setState(() => _loading = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Savings Created Successfully')),
-    );
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    } else {
-      try {
-        GoRouter.of(context).go('/dashboard');
-      } catch (_) {
-        // Fallback for tests or standard navigator
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(createSavingsNotifierProvider(widget.productId));
+
+    ref.listen<CreateSavingsState>(
+      createSavingsNotifierProvider(widget.productId),
+      (prev, next) {
+        if (next is CreateSavingsError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(next.message),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        } else if (next is CreateSavingsSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Savings Created Successfully')),
+          );
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          } else {
+            try {
+              GoRouter.of(context).go('/dashboard');
+            } catch (_) {
+              // Fallback for tests or standard navigator
+            }
+          }
+        }
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(title: const Text('Create Savings Plan')),
       body: SingleChildScrollView(
@@ -161,7 +146,7 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     DropdownButtonFormField<String>(
-                      initialValue: _productId,
+                      initialValue: state.productId,
                       decoration: const InputDecoration(
                         hintText: 'Select product type',
                         prefixIcon: Icon(Icons.savings_outlined, color: AppColors.primary),
@@ -192,7 +177,9 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
                             child: Text('${product.name} (${product.interestRate.toStringAsFixed(0)}%)'),
                           ),
                       ],
-                      onChanged: (value) => setState(() => _productId = value),
+                      onChanged: (value) => ref
+                          .read(createSavingsNotifierProvider(widget.productId).notifier)
+                          .selectProduct(value),
                       validator: (v) => v == null ? 'Product Type is required' : null,
                     ),
                   ],
@@ -302,7 +289,7 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     DropdownButtonFormField<String>(
-                      initialValue: _duration,
+                      initialValue: state.duration,
                       decoration: const InputDecoration(
                         hintText: 'Select duration',
                         prefixIcon: Icon(Icons.calendar_month_outlined, color: AppColors.primary),
@@ -330,7 +317,9 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
                         for (final duration in kDurations)
                           DropdownMenuItem(value: duration, child: Text(duration)),
                       ],
-                      onChanged: (value) => setState(() => _duration = value),
+                      onChanged: (value) => ref
+                          .read(createSavingsNotifierProvider(widget.productId).notifier)
+                          .selectDuration(value),
                       validator: (v) => v == null ? 'Duration is required' : null,
                     ),
                   ],
@@ -366,7 +355,7 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              PrimaryButton(label: 'Create', loading: _loading, onPressed: _submit),
+              PrimaryButton(label: 'Create', loading: state.isLoading, onPressed: _submit),
             ],
           ),
         ),
