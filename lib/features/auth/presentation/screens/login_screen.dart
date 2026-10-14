@@ -6,11 +6,13 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../widgets/common/app_logo.dart';
 import '../../../../widgets/common/app_text_field.dart';
 import '../../../../widgets/common/primary_button.dart';
 import '../providers/login_provider.dart';
+import '../widgets/login_footer_section.dart';
+import '../widgets/login_header_section.dart';
 
+/// Screen for authenticating the user with email and password credentials.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -31,9 +33,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _submit() {
-    debugPrint(
-      'LOGIN _submit triggered: email="${_email.text}", password="${_password.text}"',
-    );
     ref.read(loginNotifierProvider.notifier).submit(
           formKey: _formKey,
           email: _email.text,
@@ -69,20 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: AppSpacing.xxl),
-                const AppLogo(height: 72),
-                const SizedBox(height: AppSpacing.xl),
-                Text(
-                  'Welcome Back',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Sign in to continue to Koins',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
+                const LoginHeaderSection(),
                 const SizedBox(height: AppSpacing.xl),
                 AppTextField(
                   controller: _email,
@@ -119,7 +105,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // EXPECTATION: non-functional in v1. Snackbar "Coming soon".
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Coming soon')),
                       );
@@ -138,21 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: _submit,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account? "),
-                    TextButton(
-                      onPressed: () {
-                        // EXPECTATION: non-functional in v1. Snackbar "Coming soon".
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Coming soon')),
-                        );
-                      },
-                      child: const Text('Register'),
-                    ),
-                  ],
-                ),
+                const LoginFooterSection(),
               ],
             ),
           ),
@@ -161,4 +132,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
-

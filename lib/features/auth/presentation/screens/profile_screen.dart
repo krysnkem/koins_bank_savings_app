@@ -1,127 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/session/ui_session.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radius.dart';
-import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../widgets/profile_avatar_header.dart';
+import '../widgets/profile_info_section.dart';
+import '../widgets/profile_logout_button.dart';
 
-class ProfileScreen extends ConsumerWidget {
+/// Screen displaying the user profile details and logout option.
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
         automaticallyImplyLeading: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      body: const Padding(
+        padding: EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
-            const SizedBox(height: AppSpacing.xl),
-            Container(
-              width: 128,
-              height: 128,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primaryContainer,
-                boxShadow: AppShadows.avatarGlow,
-              ),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.person, color: AppColors.primary, size: 36),
-                  SizedBox(height: 2),
-                  Text(
-                    'JD',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            const Text(
-              AppConstants.mockUserName,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.2,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.mail_outline, size: 18, color: AppColors.textPrimary),
-                SizedBox(width: AppSpacing.sm),
-                Text(
-                  AppConstants.mockUserEmail,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.phone_outlined, size: 18, color: AppColors.textPrimary),
-                SizedBox(width: AppSpacing.sm),
-                Text(
-                  AppConstants.mockUserPhone,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            OutlinedButton(
-              onPressed: () {
-                ref.read(uiSessionProvider.notifier).logout();
-                context.go('/login');
-              },
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
-                foregroundColor: AppColors.textPrimary,
-                side: const BorderSide(color: AppColors.textPrimary, width: 1.5),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadius.card,
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.logout, size: 20, color: AppColors.textPrimary),
-                  SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Logout',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
+            ProfileAvatarHeader(),
+            ProfileInfoSection(),
+            Spacer(),
+            ProfileLogoutButton(),
+            SizedBox(height: AppSpacing.md),
           ],
         ),
       ),

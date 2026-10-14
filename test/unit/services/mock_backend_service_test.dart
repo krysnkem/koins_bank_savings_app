@@ -166,17 +166,22 @@ void main() {
   });
 
   group('MockBackendService.getFinancialTips', () {
-    test('returns a non-empty list of tips when online', () async {
-      // This will call the real dummyjson endpoint (or fail if no network).
-      // In CI we can inject a fake http.Client later.
-      try {
-        final tips = await service.getFinancialTips();
-        expect(tips, isNotEmpty);
-      } on NetworkException {
-        // Acceptable in offline environments
-      } on ServerException {
-        // Acceptable if the external API is down
-      }
-    }, skip: 'Requires network or injected http.Client – enable when backend is implemented',);
+    test(
+      'returns a non-empty list of tips when online',
+      () async {
+        // This will call the real dummyjson endpoint (or fail if no network).
+        // In CI we can inject a fake http.Client later.
+        try {
+          final tips = await service.getFinancialTips();
+          expect(tips, isNotEmpty);
+        } on NetworkException {
+          // Acceptable in offline environments
+        } on ServerException {
+          // Acceptable if the external API is down
+        }
+      },
+      skip:
+          'Requires network or injected http.Client – enable when backend is implemented',
+    );
   });
 }
