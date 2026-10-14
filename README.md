@@ -284,8 +284,8 @@ fvm flutter test
 ### Step-by-Step Setup
 ```bash
 # 1. Clone repository
-git clone https://github.com/chris/koins_savings_app.git
-cd koins_savings_app
+git clone https://github.com/krysnkem/koins_bank_savings_app.git
+cd koins_bank_savings_app
 
 # 2. Get dependencies
 fvm flutter pub get
