@@ -7,147 +7,175 @@ import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../savings/data/models/savings_plan.dart';
-import '../../../savings/presentation/providers/savings_provider.dart';
+import '../../../../widgets/common/empty_state.dart';
+import '../../../../widgets/common/error_state.dart';
+import '../../../../widgets/common/fade_entry.dart';
+import '../../data/models/transaction_item.dart';
+import '../providers/transactions_provider.dart';
 
-class TransactionsScreen extends ConsumerWidget {
+/// Screen displaying the user's dynamic transaction ledger loaded from the database backend.
+class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final savingsState = ref.watch(savingsNotifierProvider);
-    final plans = savingsState is SavingsLoaded ? savingsState.plans : const <SavingsPlan>[];
+  ConsumerState<TransactionsScreen> createState() => _TransactionsScreenState();
+}
 
-    // Build synthetic recent transactions based on active plans
-    final transactions = <_TransactionItem>[
-      const _TransactionItem(
-        title: 'Emergency Fund Deposit',
-        category: 'Automatic Savings',
-        amount: 25000,
-        date: 'Today, 10:45 AM',
-        icon: Icons.shield_outlined,
-        isCredit: true,
-      ),
-      const _TransactionItem(
-        title: 'New Car Contribution',
-        category: 'Target Savings',
-        amount: 50000,
-        date: 'Yesterday, 02:15 PM',
-        icon: Icons.directions_car_outlined,
-        isCredit: true,
-      ),
-      const _TransactionItem(
-        title: 'Monthly Interest Payout',
-        category: 'Interest Yield (12% p.a.)',
-        amount: 3750,
-        date: '12 Oct 2026',
-        icon: Icons.trending_up,
-        isCredit: true,
-      ),
-      const _TransactionItem(
-        title: 'School Fees Plan Deposit',
-        category: 'Education Savings',
-        amount: 15000,
-        date: '08 Oct 2026',
-        icon: Icons.school_outlined,
-        isCredit: true,
-      ),
-      ...plans.skip(3).map(
-            (p) => _TransactionItem(
-              title: '${p.name} Deposit',
-              category: p.productName,
-              amount: p.monthlyContribution > 0 ? p.monthlyContribution : 10000,
-              date: '01 Oct 2026',
-              icon: Icons.savings_outlined,
-              isCredit: true,
-            ),
-          ),
-    ];
+class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final current = ref.read(transactionsNotifierProvider);
+        if (current is! TransactionsLoaded) {
+          ref.read(transactionsNotifierProvider.notifier).load();
+        }
+      }
+    });
+  }
+
+  static IconData _resolveIcon(String iconKey) {
+    switch (iconKey) {
+      case 'car':
+        return Icons.directions_car_outlined;
+      case 'trending_up':
+        return Icons.trending_up;
+      case 'school':
+        return Icons.school_outlined;
+      case 'savings':
+        return Icons.savings_outlined;
+      default:
+        return Icons.shield_outlined;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(transactionsNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transactions'),
         automaticallyImplyLeading: false,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        children: [
-          // Summary Banner
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: AppRadius.card,
-              border: Border.all(color: AppColors.cardBorder),
-              boxShadow: AppShadows.card,
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () =>
+            ref.read(transactionsNotifierProvider.notifier).load(force: true),
+        child: switch (state) {
+          TransactionsInitial() || TransactionsLoading() => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primaryContainer,
-                  ),
-                  child: const Icon(Icons.receipt_long, color: AppColors.primary, size: 24),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Total Savings Inflow',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
+          TransactionsError(:final message) => ErrorState(
+              message: message,
+              onRetry: () => ref
+                  .read(transactionsNotifierProvider.notifier)
+                  .load(force: true),
+            ),
+          TransactionsLoaded(:final transactions, :final totalInflow) =>
+            FadeEntry(
+              key: const ValueKey('transactions_loaded'),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                children: [
+                  // Summary Banner
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.card,
+                      border: Border.all(color: AppColors.cardBorder),
+                      boxShadow: AppShadows.card,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primaryContainer,
+                          ),
+                          child: const Icon(
+                            Icons.receipt_long,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        Formatters.naira(93750),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                          letterSpacing: -0.2,
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Total Savings Inflow',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                Formatters.naira(totalInflow),
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primary,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: AppRadius.pill,
-                  ),
-                  child: const Text(
-                    'Active',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryContainer,
+                            borderRadius: AppRadius.pill,
+                          ),
+                          child: const Text(
+                            'Active',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Recent Activities',
+                    style: AppTextStyles.titleLarge,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  if (transactions.isEmpty)
+                    const EmptyState(
+                      title: 'No transactions yet',
+                      subtitle: 'Transactions will appear here as you save.',
+                    )
+                  else
+                    for (int i = 0; i < transactions.length; i++)
+                      FadeEntry.staggered(
+                        index: i,
+                        child: _buildTransactionCard(transactions[i]),
+                      ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Recent Activities',
-            style: AppTextStyles.titleLarge,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          ...transactions.map((tx) => _buildTransactionCard(tx)),
-        ],
+        },
       ),
     );
   }
 
-  Widget _buildTransactionCard(_TransactionItem tx) {
+  Widget _buildTransactionCard(TransactionItem tx) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -161,7 +189,11 @@ class TransactionsScreen extends ConsumerWidget {
         children: [
           CircleAvatar(
             backgroundColor: AppColors.primaryContainer,
-            child: Icon(tx.icon, color: AppColors.primary, size: 20),
+            child: Icon(
+              _resolveIcon(tx.iconKey),
+              color: AppColors.primary,
+              size: 20,
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -178,7 +210,7 @@ class TransactionsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${tx.category} • ${tx.date}',
+                  '${tx.category} • ${tx.dateLabel}',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 12,
@@ -191,17 +223,17 @@ class TransactionsScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '+${Formatters.naira(tx.amount)}',
-                style: const TextStyle(
+                '${tx.isCredit ? "+" : "-"}${Formatters.naira(tx.amount)}',
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
-                  color: AppColors.primary,
+                  color: tx.isCredit ? AppColors.primary : AppColors.error,
                 ),
               ),
               const SizedBox(height: 2),
-              const Text(
-                'Completed',
-                style: TextStyle(
+              Text(
+                tx.status,
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -213,22 +245,4 @@ class TransactionsScreen extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _TransactionItem {
-  final String title;
-  final String category;
-  final double amount;
-  final String date;
-  final IconData icon;
-  final bool isCredit;
-
-  const _TransactionItem({
-    required this.title,
-    required this.category,
-    required this.amount,
-    required this.date,
-    required this.icon,
-    required this.isCredit,
-  });
 }

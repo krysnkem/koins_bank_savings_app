@@ -4,12 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:koins_savings_app/core/constants/latency_constants.dart';
 import 'package:koins_savings_app/features/savings/data/datasources/savings_local_data_source.dart';
 import 'package:koins_savings_app/features/savings/presentation/screens/create_savings_screen.dart';
+import 'package:koins_savings_app/services/database/app_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  setUp(() {
+  setUp(() async {
     SharedPreferences.setMockInitialValues({});
     LatencyConstants.disableForTesting();
+    await AppDatabase.instance.database;
   });
 
   testWidgets('CreateSavingsScreen creates savings plan and writes to disk', (tester) async {

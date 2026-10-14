@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/mock_backend_service.dart';
+import '../../../../services/backend_provider.dart';
 import '../../data/datasources/savings_local_data_source.dart';
 import '../../data/datasources/savings_remote_data_source.dart';
 import '../../data/models/savings_plan.dart';
@@ -36,7 +36,7 @@ class SavingsError extends SavingsState {
 
 final savingsRepositoryProvider = Provider<SavingsRepository>((ref) {
   return SavingsRepositoryImpl(
-    remoteDataSource: SavingsRemoteDataSourceImpl(MockBackendService()),
+    remoteDataSource: SavingsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
     localDataSource: SavingsLocalDataSourceImpl(),
   );
 });

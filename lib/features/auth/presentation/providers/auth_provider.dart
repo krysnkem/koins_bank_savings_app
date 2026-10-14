@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/mock_backend_service.dart';
+import '../../../../services/backend_provider.dart';
 import '../../data/datasources/auth_local_data_source.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/models/auth_user.dart';
@@ -35,7 +35,7 @@ class AuthError extends AuthState {
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(
-    remoteDataSource: AuthRemoteDataSourceImpl(MockBackendService()),
+    remoteDataSource: AuthRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
     localDataSource: AuthLocalDataSourceImpl(),
   );
 });

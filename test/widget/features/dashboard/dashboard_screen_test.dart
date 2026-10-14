@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:koins_savings_app/core/constants/latency_constants.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/widgets/dashboard_header_section.dart';
 import 'package:koins_savings_app/features/dashboard/presentation/widgets/dashboard_quick_actions_section.dart';
@@ -11,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    LatencyConstants.disableForTesting();
   });
 
   testWidgets('DashboardScreen renders all componentized sections cleanly', (tester) async {
@@ -28,7 +30,9 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify all 4 sections exist
     expect(find.byType(DashboardHeaderSection), findsOneWidget);
@@ -80,6 +84,7 @@ void main() {
     // No global full-screen CircularProgressIndicator
     expect(find.byKey(const ValueKey('dashboard_loading')), findsNothing);
 
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(seconds: 2));
   });
 }

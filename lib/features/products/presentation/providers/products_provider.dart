@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/mock_backend_service.dart';
+import '../../../../services/backend_provider.dart';
 import '../../data/datasources/products_remote_data_source.dart';
 import '../../data/models/savings_product.dart';
 import '../../data/repositories/products_repository.dart';
@@ -30,7 +30,7 @@ class ProductsError extends ProductsState {
 
 final productsRepositoryProvider = Provider<ProductsRepository>((ref) {
   return ProductsRepositoryImpl(
-    remoteDataSource: ProductsRemoteDataSourceImpl(MockBackendService()),
+    remoteDataSource: ProductsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
   );
 });
 

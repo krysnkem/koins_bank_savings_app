@@ -14,13 +14,14 @@ A fintech mobile savings application built for the **Koins MFB Flutter Developer
 3. [Design System & Theming](#design-system--theming)
 4. [State Management Rationale](#state-management-rationale)
 5. [Local Storage Strategy](#local-storage-strategy)
-6. [REST API Integration](#rest-api-integration)
-7. [Mock Credentials](#mock-credentials)
-8. [Testing & Quality Assurance](#testing--quality-assurance)
-9. [Getting Started & Build Instructions](#getting-started--build-instructions)
-10. [Screenshots & Visual Showcase](#screenshots--visual-showcase)
-11. [Assumptions & Future Improvements](#assumptions--future-improvements)
-12. [Deliverables Checklist](#deliverables-checklist)
+6. [Abstracted Database Architecture & SQLite Tables (`sqflite`)](#abstracted-database-architecture--sqlite-tables-sqflite)
+7. [REST API Integration](#rest-api-integration)
+8. [Mock Credentials](#mock-credentials)
+9. [Testing & Quality Assurance](#testing--quality-assurance)
+10. [Getting Started & Build Instructions](#getting-started--build-instructions)
+11. [Screenshots & Visual Showcase](#screenshots--visual-showcase)
+12. [Assumptions & Future Improvements](#assumptions--future-improvements)
+13. [Deliverables Checklist](#deliverables-checklist)
 
 ---
 
@@ -133,6 +134,117 @@ The application uses **`shared_preferences`** for real disk persistence:
 
 ---
 
+## Abstracted Database Architecture & SQLite Tables (`sqflite`)
+
+To eliminate code-level hardcoding and simulate realistic network calls against a persistent data store, all application data is managed via an **Abstracted Database Service** backed by **SQLite** (`sqflite` on mobile devices and `sqflite_common_ffi` with `noIsolate: true` for headless testing).
+
+### Architecture & Abstraction Layer
+
+The design adheres to strict Dependency Inversion:
+```
+UI / Screens (ConsumerWidget)
+       │
+       ▼
+Riverpod Notifiers (AutoDisposeNotifier)
+       │
+       ▼
+Feature Repositories (SavingsRepository, AuthRepository, TransactionsRepository)
+       │
+       ▼
+Backend Service Contract (BackendService / MockBackendService)
+  [Simulates configurable network latency & offline checks]
+       │
+       ▼
+Abstracted Database Service (DatabaseService)
+       │
+       ▼
+Concrete SQLite Implementation (SqfliteDatabaseService -> AppDatabase)
+  [Tables: users, savings_products, savings_plans, transactions, financial_tips]
+```
+
+- **`DatabaseService` Interface (`lib/services/database/database_service.dart`)**:
+  Defines asynchronous contracts for users, products, savings plans, transactions, and tips. Higher layers never execute raw SQL statements directly.
+- **`SqfliteDatabaseService` (`lib/services/database/sqflite_database_service.dart`)**:
+  Implements `DatabaseService` using parameterized SQL queries and typed schema mappings.
+- **`MockBackendService` (`lib/services/mock_backend_service.dart`)**:
+  Consumes `DatabaseService`, checks network connectivity (`NetworkChecker`), simulates network latency (`LatencyConstants.backend`), and isolates data specifically for `test@bank.com`.
+
+---
+
+### Database Tables & Schema
+
+The database strictly manages the primary account: **`test@bank.com`**.
+
+#### 1. `users` Table
+Stores authenticated customer credentials and profile metadata.
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `TEXT` | `PRIMARY KEY` | Unique user identifier (`usr_001`) |
+| `email` | `TEXT` | `UNIQUE NOT NULL` | Scoped account email (`test@bank.com`) |
+| `password` | `TEXT` | `NOT NULL` | Account password (`Password123`) |
+| `full_name` | `TEXT` | `NOT NULL` | Customer name (`John Doe`) |
+| `phone` | `TEXT` | `NOT NULL` | Customer phone (`+234 801 234 5678`) |
+| `avatar_initials` | `TEXT` | `NOT NULL` | Display avatar text (`JD`) |
+| `created_at` | `TEXT` | `NOT NULL` | ISO 8601 registration timestamp |
+
+#### 2. `savings_products` Table
+Stores interest-bearing products offered to customers.
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `TEXT` | `PRIMARY KEY` | Product ID (`1`, `2`, `3`, `4`) |
+| `name` | `TEXT` | `NOT NULL` | Product name (e.g. *Target Savings*, *Fixed Deposit*) |
+| `interest_rate` | `REAL` | `NOT NULL` | Annual interest percentage (e.g. `12.0`, `18.0`) |
+| `duration` | `TEXT` | `NOT NULL` | Default tenure label (`12 Months`, `6 Months`, `Flexible`) |
+| `short_description`| `TEXT` | `NOT NULL` | Brief marketing summary |
+| `minimum_deposit`| `REAL` | `NOT NULL` | Minimum required opening deposit (`5000.0`) |
+| `icon_key` | `TEXT` | `NOT NULL` | Associated iconography identifier |
+| `is_active` | `INTEGER` | `NOT NULL DEFAULT 1` | Product availability flag (1 = active) |
+
+#### 3. `savings_plans` Table
+Stores all active savings plans created for `test@bank.com`.
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `TEXT` | `PRIMARY KEY` | Plan ID (e.g. `seed-1`, `plan-179...`) |
+| `user_email` | `TEXT` | `NOT NULL, FK -> users(email)` | Plan owner email |
+| `product_id` | `TEXT` | `NOT NULL, FK -> savings_products(id)`| Associated product ID |
+| `product_name` | `TEXT` | `NOT NULL` | Snapshot product title |
+| `name` | `TEXT` | `NOT NULL` | Custom plan name (e.g. *Emergency Fund*, *House Savings Plan*) |
+| `amount` | `REAL` | `NOT NULL` | Current accumulated savings amount in Naira |
+| `target_amount` | `REAL` | `NOT NULL` | User target savings goal amount |
+| `monthly_contribution` | `REAL` | `NOT NULL` | Configured monthly recurring deposit |
+| `frequency` | `TEXT` | `NOT NULL` | Contribution cadence (`Monthly`) |
+| `duration` | `TEXT` | `NOT NULL` | Configured duration (`12 Months`, `6 Months`, etc.) |
+| `status` | `TEXT` | `NOT NULL DEFAULT 'active'` | Current status (`active`, `completed`) |
+| `created_at` | `TEXT` | `NOT NULL` | ISO 8601 creation timestamp |
+
+#### 4. `transactions` Table
+Stores transaction ledger records (deposits, yields, creations).
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `TEXT` | `PRIMARY KEY` | Transaction identifier (`tx_001`, `tx-...`) |
+| `user_email` | `TEXT` | `NOT NULL, FK -> users(email)` | Associated account email |
+| `plan_id` | `TEXT` | `NULLABLE` | Associated savings plan ID if applicable |
+| `title` | `TEXT` | `NOT NULL` | Headline title (e.g. *Emergency Fund Deposit*) |
+| `category` | `TEXT` | `NOT NULL` | Categorization (e.g. *Automatic Savings*, *Target Savings*) |
+| `amount` | `REAL` | `NOT NULL` | Transaction amount in Naira |
+| `is_credit` | `INTEGER` | `NOT NULL DEFAULT 1` | 1 = Inflow (credit), 0 = Outflow (debit) |
+| `status` | `TEXT` | `NOT NULL DEFAULT 'Completed'` | Transaction state |
+| `date_label` | `TEXT` | `NOT NULL` | Human-readable date label |
+| `icon_key` | `TEXT` | `NOT NULL` | Icon identifier for visual presentation |
+| `created_at` | `TEXT` | `NOT NULL` | ISO 8601 timestamp |
+
+#### 5. `financial_tips` Table
+Stores personalized financial tips and advisory insights displayed on the dashboard.
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `TEXT` | `PRIMARY KEY` | Tip identifier (`tip_1`, `tip_2`, `tip_3`) |
+| `title` | `TEXT` | `NOT NULL` | Tip title (e.g. *Pay Yourself First*) |
+| `body` | `TEXT` | `NOT NULL` | Financial advice text |
+| `category` | `TEXT` | `NOT NULL` | Category tag (e.g. *Budgeting*, *Investing*) |
+| `icon_key` | `TEXT` | `NOT NULL` | Icon key identifier |
+
+---
+
 ## REST API Integration
 
 - **Endpoint**: Integrates with the public REST API (`https://dummyjson.com/posts`) to dynamically retrieve and display **Financial Insights & Tips** on the Dashboard.
@@ -160,19 +272,20 @@ fvm flutter analyze
 ```
 
 ### Automated Test Suite
-The codebase includes 73 comprehensive automated unit and widget tests covering:
+The codebase includes 84 comprehensive automated unit and widget tests covering:
 - **Router & Shell Configuration**: Top-level route configuration, `rootNavigatorKey`, and all 4 `StatefulShellBranch` destinations (`/dashboard`, `/products`, `/my-savings`, `/profile`).
-- **Disk Persistence Layer**: `SavingsLocalDataSource` tests verifying JSON serialization and write-to-disk for created plans; `AuthLocalDataSource` tests for session persistence.
-- **Widget Flow Tests**: `CreateSavingsScreen` widget test verifying that completing the form writes the created plan directly to local storage (`SharedPreferences`) and displays a success notification; `SavingsPlansScreen` widget test verifying portfolio rendering; `DashboardScreen`, `LoginScreen`, `ProfileScreen`, and `ProductDetailsScreen` componentized widget tests.
+- **Disk Persistence & SQLite Layer**: `SqfliteDatabaseService` and `AppDatabase` queries, inserts, and migrations; `SavingsLocalDataSource` tests verifying JSON serialization and write-to-disk for created plans; `AuthLocalDataSource` tests for session persistence.
+- **Widget Flow Tests**: `CreateSavingsScreen` widget test verifying that completing the form writes the created plan directly to local storage (`SharedPreferences`) and SQLite, and displays a success notification; `SavingsPlansScreen` widget test verifying portfolio rendering; `DashboardScreen`, `LoginScreen`, `ProfileScreen`, and `ProductDetailsScreen` componentized widget tests.
+- **Animations & Micro-interactions**: `FadeEntry` opacity entry tests and `StaggeredRollingNumber` character-by-character scrolling ticker tests.
 - **Validators**: Email format regex, password length ($\ge 8$), required fields, positive amount checks.
 - **Formatters**: Nigerian Naira currency formatting (`₦`), percentage formatting (`p.a.`), dynamic greetings.
 - **Exception Hierarchy**: Proper codes and messages for `AuthException`, `NetworkException`, and `ServerException`.
-- **Repositories**: `AuthRepository`, `ProductsRepository`, and `SavingsRepository` error propagation and disk persistence.
-- **Mock Backend Service**: Login credential verification, product lookup, plan creation, and offline exception handling.
+- **Repositories**: `AuthRepository`, `ProductsRepository`, `SavingsRepository`, and `TransactionsRepository` error propagation and disk persistence.
+- **Mock Backend Service & SQLite**: Login credential verification, product lookup, plan creation, transaction recording, and offline exception handling.
 
 ```bash
 fvm flutter test
-# Output: 73 tests passed! (100% green)
+# Output: 84 tests passed! (100% green)
 ```
 
 ---

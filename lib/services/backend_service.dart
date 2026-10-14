@@ -1,5 +1,6 @@
 import '../features/auth/data/models/auth_user.dart';
 import '../features/dashboard/data/models/financial_tip.dart';
+import '../features/dashboard/data/models/transaction_item.dart';
 import '../features/products/data/models/savings_product.dart';
 import '../features/savings/data/models/savings_plan.dart';
 
@@ -26,4 +27,6 @@ abstract class BackendService {
   });
 
   Future<List<FinancialTip>> getFinancialTips();
+
+  Future<List<TransactionItem>> getTransactions();
 }

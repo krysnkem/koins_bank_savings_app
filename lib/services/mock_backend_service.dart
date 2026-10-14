@@ -1,104 +1,35 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
-import '../core/constants/app_constants.dart';
 import '../core/constants/latency_constants.dart';
 import '../core/errors/app_exception.dart';
 import '../core/network/network_checker.dart';
 import '../features/auth/data/models/auth_user.dart';
 import '../features/dashboard/data/models/financial_tip.dart';
+import '../features/dashboard/data/models/transaction_item.dart';
 import '../features/products/data/models/savings_product.dart';
 import '../features/savings/data/models/savings_plan.dart';
 import 'backend_service.dart';
+import 'database/app_database.dart';
+import 'database/database_service.dart';
+import 'database/sqflite_database_service.dart';
 
+/// Simulates a real backend API by querying and persisting data via [DatabaseService],
+/// introducing configurable latency and network checking.
 class MockBackendService implements BackendService {
   MockBackendService({
+    DatabaseService? databaseService,
     NetworkChecker? networkChecker,
-    http.Client? httpClient,
     Duration? latency,
-  })  : _networkChecker = networkChecker ?? const NetworkCheckerImpl(),
-        _httpClient = httpClient ?? http.Client(),
+  })  : _databaseService = databaseService ?? SqfliteDatabaseService(),
+        _networkChecker = networkChecker ?? const NetworkCheckerImpl(),
         latency = latency ?? LatencyConstants.backend;
 
+  final DatabaseService _databaseService;
   final NetworkChecker _networkChecker;
-  final http.Client _httpClient;
 
   Duration latency;
   bool forceOffline = false;
 
-  static const List<SavingsProduct> _hardcodedProducts = [
-    SavingsProduct(
-      id: '1',
-      name: 'Target Savings',
-      interestRate: 12.0,
-      duration: '12 Months',
-      shortDescription: 'Save towards a specific goal with competitive returns.',
-      minimumDeposit: 5000,
-    ),
-    SavingsProduct(
-      id: '2',
-      name: 'Fixed Deposit',
-      interestRate: 18.0,
-      duration: '6 Months',
-      shortDescription: 'Lock funds for a fixed period and earn higher interest.',
-      minimumDeposit: 5000,
-    ),
-    SavingsProduct(
-      id: '3',
-      name: 'Education Savings',
-      interestRate: 10.0,
-      duration: 'Flexible',
-      shortDescription: 'Flexible savings plan designed for education goals.',
-      minimumDeposit: 5000,
-    ),
-    SavingsProduct(
-      id: '4',
-      name: 'Vacation Savings',
-      interestRate: 8.0,
-      duration: 'Flexible',
-      shortDescription: 'Build your travel fund at your own pace.',
-      minimumDeposit: 5000,
-    ),
-  ];
-
-  late final List<SavingsPlan> _plans = [
-    SavingsPlan(
-      id: 'seed-1',
-      name: 'Emergency Fund',
-      productId: '1',
-      productName: 'Target Savings',
-      amount: 120000,
-      targetAmount: 500000,
-      monthlyContribution: 20000,
-      frequency: 'Monthly',
-      duration: '12 Months',
-      createdAt: DateTime.now(),
-    ),
-    SavingsPlan(
-      id: 'seed-2',
-      name: 'House Savings Plan',
-      productId: '2',
-      productName: 'Fixed Deposit',
-      amount: 250000,
-      targetAmount: 2000000,
-      monthlyContribution: 50000,
-      frequency: 'Monthly',
-      duration: '6 Months',
-      createdAt: DateTime.now(),
-    ),
-    SavingsPlan(
-      id: 'seed-3',
-      name: 'Education Plan',
-      productId: '3',
-      productName: 'Education Savings',
-      amount: 180000,
-      targetAmount: 800000,
-      monthlyContribution: 15000,
-      frequency: 'Monthly',
-      duration: 'Flexible',
-      createdAt: DateTime.now(),
-    ),
-  ];
+  /// User email strictly managed by the backend
+  static const String managedUserEmail = AppDatabase.managedUserEmail;
 
   Future<void> _ensureOnline() async {
     if (forceOffline || !await _networkChecker.isAvailable) {
@@ -121,12 +52,12 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    if (email.trim().toLowerCase() == AppConstants.mockEmail.toLowerCase() &&
-        password == AppConstants.mockPassword) {
-      return const AuthUser(
-        fullName: AppConstants.mockUserName,
-        email: AppConstants.mockUserEmail,
-        phone: AppConstants.mockUserPhone,
+    final userRow = await _databaseService.getUserByEmail(email);
+    if (userRow != null && userRow['password'] == password) {
+      return AuthUser(
+        fullName: userRow['full_name']?.toString() ?? '',
+        email: userRow['email']?.toString() ?? '',
+        phone: userRow['phone']?.toString() ?? '',
       );
     }
     throw const AuthException('Invalid email or password');
@@ -136,25 +67,61 @@ class MockBackendService implements BackendService {
   Future<List<SavingsProduct>> getSavingsProducts() async {
     await _ensureOnline();
     await _simulateLatency();
-    return List.from(_hardcodedProducts);
+
+    final rows = await _databaseService.getSavingsProducts();
+    return rows.map((r) {
+      return SavingsProduct(
+        id: r['id'].toString(),
+        name: r['name'].toString(),
+        interestRate: (r['interest_rate'] as num).toDouble(),
+        duration: r['duration'].toString(),
+        shortDescription: r['short_description'].toString(),
+        minimumDeposit: (r['minimum_deposit'] as num).toDouble(),
+      );
+    }).toList();
   }
 
   @override
   Future<SavingsProduct> getProductById(String id) async {
     await _ensureOnline();
     await _simulateLatency();
-    try {
-      return _hardcodedProducts.firstWhere((p) => p.id == id);
-    } catch (_) {
-      throw const ServerException('Product not found');
+
+    final row = await _databaseService.getProductById(id);
+    if (row != null) {
+      return SavingsProduct(
+        id: row['id'].toString(),
+        name: row['name'].toString(),
+        interestRate: (row['interest_rate'] as num).toDouble(),
+        duration: row['duration'].toString(),
+        shortDescription: row['short_description'].toString(),
+        minimumDeposit: (row['minimum_deposit'] as num).toDouble(),
+      );
     }
+    throw const ServerException('Product not found');
   }
 
   @override
   Future<List<SavingsPlan>> getSavingsPlans() async {
     await _ensureOnline();
     await _simulateLatency();
-    return List.from(_plans);
+
+    final rows = await _databaseService.getSavingsPlans(
+      email: managedUserEmail,
+    );
+    return rows.map((r) {
+      return SavingsPlan(
+        id: r['id'].toString(),
+        name: r['name'].toString(),
+        productId: r['product_id'].toString(),
+        productName: r['product_name'].toString(),
+        amount: (r['amount'] as num).toDouble(),
+        targetAmount: (r['target_amount'] as num).toDouble(),
+        monthlyContribution: (r['monthly_contribution'] as num).toDouble(),
+        frequency: r['frequency'].toString(),
+        duration: r['duration'].toString(),
+        createdAt: DateTime.tryParse(r['created_at'].toString()) ?? DateTime.now(),
+      );
+    }).toList();
   }
 
   @override
@@ -168,53 +135,84 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    SavingsProduct product;
-    try {
-      product = _hardcodedProducts.firstWhere((p) => p.id == productId);
-    } catch (_) {
+    final productRow = await _databaseService.getProductById(productId);
+    if (productRow == null) {
       throw ServerException('Unknown productId: $productId');
     }
+    final productName = productRow['name'].toString();
 
-    final plan = SavingsPlan(
-      id: 'plan-${_plans.length + 1}',
+    final now = DateTime.now();
+    final planId = 'plan-${now.millisecondsSinceEpoch}';
+
+    final planMap = {
+      'id': planId,
+      'user_email': managedUserEmail,
+      'product_id': productId,
+      'product_name': productName,
+      'name': name,
+      'amount': 0.0,
+      'target_amount': targetAmount,
+      'monthly_contribution': monthlyContribution,
+      'frequency': 'Monthly',
+      'duration': duration,
+      'status': 'active',
+      'created_at': now.toIso8601String(),
+    };
+    await _databaseService.insertSavingsPlan(planMap);
+
+    // Record creation event in transactions table
+    final txMap = {
+      'id': 'tx-${now.millisecondsSinceEpoch}',
+      'user_email': managedUserEmail,
+      'plan_id': planId,
+      'title': '$name Plan Created',
+      'category': productName,
+      'amount': monthlyContribution,
+      'is_credit': 1,
+      'status': 'Completed',
+      'date_label': 'Just now',
+      'icon_key': 'shield',
+      'created_at': now.toIso8601String(),
+    };
+    await _databaseService.insertTransaction(txMap);
+
+    return SavingsPlan(
+      id: planId,
       name: name,
       productId: productId,
-      productName: product.name,
-      amount: 0,
+      productName: productName,
+      amount: 0.0,
       targetAmount: targetAmount,
       monthlyContribution: monthlyContribution,
       frequency: 'Monthly',
       duration: duration,
-      createdAt: DateTime.now(),
+      createdAt: now,
     );
-    _plans.add(plan);
-    return plan;
   }
 
   @override
   Future<List<FinancialTip>> getFinancialTips() async {
     await _ensureOnline();
     await _simulateLatency();
-    try {
-      final response = await _httpClient.get(
-        Uri.parse('${AppConstants.baseUrl}/posts?limit=5'),
+
+    final rows = await _databaseService.getFinancialTips();
+    return rows.map((r) {
+      return FinancialTip(
+        id: r['id'].toString(),
+        title: r['title']?.toString() ?? 'Financial Tip',
+        body: r['body']?.toString() ?? '',
       );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final posts = (data['posts'] as List<dynamic>?) ?? [];
-        return posts.take(3).map((item) {
-          final p = item as Map<String, dynamic>;
-          return FinancialTip(
-            id: p['id'].toString(),
-            title: p['title']?.toString() ?? 'Financial Tip',
-            body: p['body']?.toString() ?? '',
-          );
-        }).toList();
-      }
-      throw ServerException('Failed to load tips (${response.statusCode})');
-    } catch (e) {
-      if (e is AppException) rethrow;
-      throw ServerException(e.toString());
-    }
+    }).toList();
+  }
+
+  @override
+  Future<List<TransactionItem>> getTransactions() async {
+    await _ensureOnline();
+    await _simulateLatency();
+
+    final rows = await _databaseService.getTransactions(
+      email: managedUserEmail,
+    );
+    return rows.map(TransactionItem.fromMap).toList();
   }
 }

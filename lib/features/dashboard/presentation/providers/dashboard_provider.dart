@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../services/mock_backend_service.dart';
+import '../../../../services/backend_provider.dart';
 import '../../../savings/data/models/savings_plan.dart';
 import '../../../savings/data/repositories/savings_repository.dart';
 import '../../../savings/presentation/providers/savings_provider.dart';
@@ -42,7 +42,7 @@ class DashboardError extends DashboardState {
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
   return DashboardRepositoryImpl(
-    tipsDataSource: TipsRemoteDataSourceImpl(MockBackendService()),
+    tipsDataSource: TipsRemoteDataSourceImpl(ref.watch(backendServiceProvider)),
   );
 });
 
