@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -25,7 +26,7 @@ class PrimaryButton extends StatelessWidget {
         ? const SizedBox(
             width: 22,
             height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+            child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.white),
           )
         : Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -37,8 +38,8 @@ class PrimaryButton extends StatelessWidget {
 
     final style = ElevatedButton.styleFrom(
       minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.button,
       ),
     );
 
@@ -49,8 +50,8 @@ class PrimaryButton extends StatelessWidget {
           minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.borderRadius),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.button,
           ),
         ),
         child: child,
