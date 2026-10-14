@@ -130,7 +130,7 @@ class _RecentSavingsCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  Formatters.naira(plan.amount == 0 ? plan.targetAmount : plan.amount),
+                  Formatters.naira(plan.amount),
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,

@@ -32,6 +32,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(dashboardNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
@@ -46,18 +48,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       body: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: () => ref.read(dashboardNotifierProvider.notifier).load(),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          children: const [
-            DashboardHeaderSection(),
-            SizedBox(height: AppSpacing.lg),
-            DashboardQuickActionsSection(),
-            SizedBox(height: AppSpacing.xl),
-            DashboardRecentSavingsSection(),
-            SizedBox(height: AppSpacing.lg),
-            DashboardTipsSection(),
-          ],
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 350),
+          child: state is DashboardLoading
+              ? const Center(
+                  key: ValueKey('dashboard_loading'),
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : AnimatedOpacity(
+                  key: const ValueKey('dashboard_loaded'),
+                  opacity: state is DashboardLoaded ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOut,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                    children: const [
+                      DashboardHeaderSection(),
+                      SizedBox(height: AppSpacing.lg),
+                      DashboardQuickActionsSection(),
+                      SizedBox(height: AppSpacing.xl),
+                      DashboardRecentSavingsSection(),
+                      SizedBox(height: AppSpacing.lg),
+                      DashboardTipsSection(),
+                    ],
+                  ),
+                ),
         ),
       ),
     );

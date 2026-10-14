@@ -59,8 +59,6 @@ const kProducts = <UiProduct>[
   ),
 ];
 
-const kDashboardTotal = 850000.0;
-
 const kDurations = ['3 Months', '6 Months', '12 Months', '24 Months', 'Flexible'];
 
 UiProduct? productById(String id) {

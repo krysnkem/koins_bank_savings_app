@@ -22,9 +22,15 @@ class DashboardLoading extends DashboardState {
 }
 
 class DashboardLoaded extends DashboardState {
+  final double totalSavings;
   final List<SavingsPlan> recentPlans;
   final List<FinancialTip> tips;
-  const DashboardLoaded({required this.recentPlans, required this.tips});
+
+  const DashboardLoaded({
+    required this.totalSavings,
+    required this.recentPlans,
+    required this.tips,
+  });
 }
 
 class DashboardError extends DashboardState {
@@ -64,8 +70,13 @@ class DashboardNotifier extends AutoDisposeNotifier<DashboardState> {
 
       final allPlans = results[0] as List<SavingsPlan>;
       final tips = results[1] as List<FinancialTip>;
+      final totalSavings = allPlans.fold<double>(
+        0.0,
+        (sum, p) => sum + p.amount,
+      );
 
       state = DashboardLoaded(
+        totalSavings: totalSavings,
         recentPlans: allPlans.take(3).toList(),
         tips: tips,
       );

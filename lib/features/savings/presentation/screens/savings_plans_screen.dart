@@ -35,10 +35,7 @@ class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
     final plans = state is SavingsLoaded ? state.plans : const <SavingsPlan>[];
 
     final totalTarget = plans.fold<double>(0, (sum, p) => sum + p.targetAmount);
-    final totalSaved = plans.fold<double>(
-      0,
-      (sum, p) => sum + (p.amount > 0 ? p.amount : p.monthlyContribution * 2),
-    );
+    final totalSaved = plans.fold<double>(0, (sum, p) => sum + p.amount);
 
     return Scaffold(
       appBar: AppBar(
@@ -55,23 +52,33 @@ class _SavingsPlansScreenState extends ConsumerState<SavingsPlansScreen> {
       body: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: () => ref.read(savingsNotifierProvider.notifier).load(),
-        child: state is SavingsLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              )
-            : ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(AppSpacing.screenPadding),
-                children: [
-                  SavingsPortfolioSection(
-                    planCount: plans.length,
-                    totalTarget: totalTarget,
-                    totalSaved: totalSaved,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 350),
+          child: state is SavingsLoading
+              ? const Center(
+                  key: ValueKey('savings_loading'),
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : AnimatedOpacity(
+                  key: const ValueKey('savings_loaded'),
+                  opacity: state is SavingsLoaded ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOut,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                    children: [
+                      SavingsPortfolioSection(
+                        planCount: plans.length,
+                        totalTarget: totalTarget,
+                        totalSaved: totalSaved,
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      ActiveSavingsPlansSection(plans: plans),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.xl),
-                  ActiveSavingsPlansSection(plans: plans),
-                ],
-              ),
+                ),
+        ),
       ),
     );
   }

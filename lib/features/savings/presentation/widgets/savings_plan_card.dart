@@ -31,8 +31,7 @@ class SavingsPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentVal =
-        plan.amount > 0 ? plan.amount : plan.monthlyContribution * 2;
+    final currentVal = plan.amount;
     final progress = plan.targetAmount > 0
         ? (currentVal / plan.targetAmount).clamp(0.0, 1.0)
         : 0.0;
