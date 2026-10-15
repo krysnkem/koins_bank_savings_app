@@ -32,7 +32,7 @@ class StaggeredRollingNumber extends StatefulWidget {
     this.isLoaded = true,
     this.showDecimals = false,
     this.style,
-    this.duration = const Duration(milliseconds: 4800),
+    this.duration = const Duration(milliseconds: 28800),
     this.curve = Curves.easeOutCubic,
   });
 
@@ -252,11 +252,11 @@ class _DialReelState extends State<_DialReel> {
   }
 
   static int _calculateCycles(int digitIndex, int totalDigits) {
-    if (totalDigits <= 1) return 3;
-    // Progressive cycles: leftmost digits spin 3 full cycles (30+ digits),
-    // deeper digits spin up to 6 full cycles (60+ digits) for physical speed-dial feel.
-    final progressive = (digitIndex / (totalDigits - 1) * 3).round();
-    return 3 + progressive;
+    if (totalDigits <= 1) return 8;
+    // Progressive cycles: leftmost digits spin 8 full cycles (80+ digits),
+    // deeper digits spin up to 18 full cycles (180+ digits) for extended smooth dial motion.
+    final progressive = (digitIndex / (totalDigits - 1) * 10).round();
+    return 8 + progressive;
   }
 
   static double _calculateStart(int digitIndex, int totalDigits) {
@@ -267,7 +267,7 @@ class _DialReelState extends State<_DialReel> {
 
   static double _calculateEnd(int digitIndex, int totalDigits) {
     if (totalDigits <= 1) return 1.0;
-    // Staggered finish: leftmost digit locks at ~58% (~2.8s), rightmost locks at 100% (4.8s)
+    // Staggered finish: leftmost digit locks at ~58% (~16.7s), rightmost locks at 100% (28.8s)
     final ratio = digitIndex / (totalDigits - 1);
     return (0.58 + 0.42 * ratio).clamp(0.0, 1.0);
   }
