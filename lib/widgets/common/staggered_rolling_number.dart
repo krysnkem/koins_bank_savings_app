@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/formatters.dart';
 
-/// A Moniepoint-style staggered, per-character vertical rolling number animation.
+/// Type alias for developers referring to the staggered dial animation.
+typedef StaggeredDialNumber = StaggeredRollingNumber;
+
+/// A Moniepoint-style staggered, per-character vertical dial scrolling animation.
+///
+/// Each numeric character is rendered in an independent vertical dial reel
+/// that scrolls through a sequence of digits and decelerates smoothly into its
+/// target value. Non-numeric characters (currency symbol '₦', commas ',', decimals '.')
+/// remain static.
 ///
 /// Features:
-/// - Static non-digits (currency symbol '₦', commas ',', decimal points '.').
-/// - Staggered vertical reel/speed-dial scrolling for every numeric digit.
-/// - Each digit column rolls through a sequence of numbers with custom easing
-///   and locks into place sequentially from left to right.
+/// - Independent per-character vertical scroll reel ([_DialReel]).
+/// - Uniform tabular digit sizing so columns maintain steady width during spin.
+/// - Native Flutter [Interval] and [CurvedAnimation] cascading from left to right.
+/// - GPU-accelerated [Transform.translate] layer (zero re-layout during roll).
 /// - Full accessibility semantics for screen readers.
 class StaggeredRollingNumber extends StatefulWidget {
   final num amount;
@@ -49,11 +57,7 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
     );
     if (widget.isLoaded) {
       _lastAnimatedAmount = widget.amount;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _controller.forward(from: 0.0);
-        }
-      });
+      _controller.forward(from: 0.0);
     }
   }
 
@@ -81,16 +85,20 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
   Widget build(BuildContext context) {
     super.build(context);
     final effectiveStyle =
-        widget.style ?? Theme.of(context).textTheme.headlineMedium;
+        widget.style ?? Theme.of(context).textTheme.headlineMedium ?? const TextStyle(fontSize: 28);
+
     final formatted = Formatters.naira(
       widget.isLoaded ? widget.amount : 0,
       showDecimals: widget.showDecimals,
     );
 
-    // Calculate dimensions of digit and non-digit characters
+    // Compute uniform digit dimensions using '8' for tabular consistency
     final textScaler = MediaQuery.textScalerOf(context);
     final digitPainter = TextPainter(
-      text: TextSpan(text: '8', style: effectiveStyle),
+      text: TextSpan(
+        text: '8',
+        style: effectiveStyle,
+      ),
       textDirection: TextDirection.ltr,
       textScaler: textScaler,
     )..layout();
@@ -115,7 +123,7 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
         children: characters.map((char) {
           final targetDigit = int.tryParse(char);
           if (targetDigit == null) {
-            // Non-digit character (symbol, comma, decimal point)
+            // Static non-digit character (symbol, comma, decimal point)
             return SizedBox(
               height: digitHeight,
               child: Center(
@@ -128,15 +136,15 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
           }
 
           final currentDigitIdx = digitIndex++;
-          return _RollingDigitColumn(
-            key: ValueKey('rolling_digit_${currentDigitIdx}_$targetDigit'),
+          return _DialReel(
+            key: ValueKey('dial_reel_${currentDigitIdx}_$targetDigit'),
             targetDigit: targetDigit,
             digitIndex: currentDigitIdx,
             totalDigits: totalDigits,
             digitHeight: digitHeight,
             digitWidth: digitWidth,
             style: effectiveStyle,
-            animation: _controller,
+            controller: _controller,
             curve: widget.curve,
           );
         }).toList(),
@@ -145,22 +153,21 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
   }
 }
 
-class _RollingDigitColumn extends StatelessWidget {
+/// An individual vertical dial reel for a single digit column.
+///
+/// Spins vertically through multiple revolutions of digits 0-9 and decelerates
+/// into its [targetDigit] along a staggered [Interval] driven by [controller].
+class _DialReel extends StatefulWidget {
   final int targetDigit;
   final int digitIndex;
   final int totalDigits;
   final double digitHeight;
   final double digitWidth;
-  final TextStyle? style;
-  final Animation<double> animation;
+  final TextStyle style;
+  final AnimationController controller;
   final Curve curve;
 
-  final List<String> digitSequence;
-  final int targetIndex;
-  final double start;
-  final double end;
-
-  _RollingDigitColumn({
+  const _DialReel({
     super.key,
     required this.targetDigit,
     required this.digitIndex,
@@ -168,50 +175,88 @@ class _RollingDigitColumn extends StatelessWidget {
     required this.digitHeight,
     required this.digitWidth,
     required this.style,
-    required this.animation,
+    required this.controller,
     required this.curve,
-  })  : digitSequence = _buildSequence(targetDigit, digitIndex, totalDigits),
-        targetIndex = _calculateTargetIndex(targetDigit, digitIndex, totalDigits),
-        start = _calculateStart(digitIndex, totalDigits),
-        end = _calculateEnd(digitIndex, totalDigits);
+  });
 
-  static int _calculateCycles(int digitIndex, int totalDigits) {
-    if (totalDigits <= 1) return 2;
-    // Progressive cycles: leftmost digits spin at least 2 full cycles (20+ numbers),
-    // deeper digits spin up to 5 full cycles (50+ numbers) for high-speed reel feel.
-    final progressive = (digitIndex / (totalDigits - 1) * 3).round();
-    return 2 + progressive;
+  @override
+  State<_DialReel> createState() => _DialReelState();
+}
+
+class _DialReelState extends State<_DialReel> {
+  late List<String> _digitSequence;
+  late int _targetIndex;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initReel();
   }
 
-  static List<String> _buildSequence(
-    int targetDigit,
-    int digitIndex,
-    int totalDigits,
-  ) {
-    final cycles = _calculateCycles(digitIndex, totalDigits);
+  @override
+  void didUpdateWidget(_DialReel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.targetDigit != oldWidget.targetDigit ||
+        widget.digitIndex != oldWidget.digitIndex ||
+        widget.totalDigits != oldWidget.totalDigits ||
+        widget.controller != oldWidget.controller ||
+        widget.curve != oldWidget.curve) {
+      _initReel();
+    }
+  }
+
+  void _initReel() {
+    // 1. Calculate progressive spin cycles for this column
+    final cycles = _calculateCycles(
+      widget.digitIndex,
+      widget.totalDigits,
+    );
+
+    // 2. Build continuous vertical number sequence: [0..9] x cycles + [0..targetDigit] + buffer
     final sequence = <String>[];
     for (int c = 0; c < cycles; c++) {
       for (int d = 0; d <= 9; d++) {
         sequence.add('$d');
       }
     }
-    for (int d = 0; d <= targetDigit; d++) {
+    for (int d = 0; d <= widget.targetDigit; d++) {
       sequence.add('$d');
     }
-    // Safety buffer digits after target to prevent clipping or empty space
+    _targetIndex = (cycles * 10) + widget.targetDigit;
+
+    // Safety buffer digits below target to prevent any clipping during deceleration
     for (int d = 0; d <= 9; d++) {
       sequence.add('$d');
     }
-    return sequence;
+    _digitSequence = sequence;
+
+    // 3. Staggered Interval: Leftmost reels lock first, cascading to rightmost
+    final start = _calculateStart(
+      widget.digitIndex,
+      widget.totalDigits,
+    );
+    final end = _calculateEnd(
+      widget.digitIndex,
+      widget.totalDigits,
+    );
+
+    _animation = CurvedAnimation(
+      parent: widget.controller,
+      curve: Interval(
+        start,
+        end,
+        curve: widget.curve,
+      ),
+    );
   }
 
-  static int _calculateTargetIndex(
-    int targetDigit,
-    int digitIndex,
-    int totalDigits,
-  ) {
-    final cycles = _calculateCycles(digitIndex, totalDigits);
-    return (cycles * 10) + targetDigit;
+  static int _calculateCycles(int digitIndex, int totalDigits) {
+    if (totalDigits <= 1) return 2;
+    // Progressive cycles: leftmost digits spin 2 full cycles (20+ digits),
+    // deeper digits spin up to 5 full cycles (50+ digits) for physical speed-dial feel.
+    final progressive = (digitIndex / (totalDigits - 1) * 3).round();
+    return 2 + progressive;
   }
 
   static double _calculateStart(int digitIndex, int totalDigits) {
@@ -222,53 +267,50 @@ class _RollingDigitColumn extends StatelessWidget {
 
   static double _calculateEnd(int digitIndex, int totalDigits) {
     if (totalDigits <= 1) return 1.0;
-    // Staggered finish: left digits lock first (around 58% ~ 1.4s), right digits lock sequentially
+    // Staggered finish: leftmost digit locks at ~58% (~1.4s), rightmost locks at 100% (2.4s)
     final ratio = digitIndex / (totalDigits - 1);
     return (0.58 + 0.42 * ratio).clamp(0.0, 1.0);
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        final rawProgress = (animation.value - start) / (end - start);
-        final clampedProgress = rawProgress.clamp(0.0, 1.0);
-        final curvedProgress = curve.transform(clampedProgress);
-        final currentOffset = -curvedProgress * targetIndex * digitHeight;
-
-        return ClipRect(
-          child: SizedBox(
-            width: digitWidth,
-            height: digitHeight,
-            child: Stack(
-              clipBehavior: Clip.hardEdge,
-              children: [
-                Positioned(
-                  top: currentOffset,
-                  left: 0,
-                  right: 0,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: digitSequence.map((digitChar) {
-                      return SizedBox(
-                        width: digitWidth,
-                        height: digitHeight,
-                        child: Center(
-                          child: Text(
-                            digitChar,
-                            style: style,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+    return ClipRect(
+      child: SizedBox(
+        width: widget.digitWidth,
+        height: widget.digitHeight,
+        child: OverflowBox(
+          alignment: Alignment.topCenter,
+          maxHeight: double.infinity,
+          child: AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              final offset =
+                  -_animation.value * _targetIndex * widget.digitHeight;
+              return Transform.translate(
+                offset: Offset(0, offset),
+                child: child,
+              );
+            },
+            // Cache the Column so Flutter does not reconstruct or re-layout
+            // the Text widgets on every animation tick!
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _digitSequence.map((digit) {
+                return SizedBox(
+                  width: widget.digitWidth,
+                  height: widget.digitHeight,
+                  child: Center(
+                    child: Text(
+                      digit,
+                      style: widget.style,
+                    ),
                   ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
