@@ -87,5 +87,76 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('5'), findsWidgets);
     });
+
+    testWidgets('does not re-trigger animation when updated with the same amount', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StaggeredRollingNumber(
+              amount: 100000,
+              isLoaded: true,
+              duration: Duration(milliseconds: 300),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('₦100,000'), findsOneWidget);
+
+      // Rebuild with same amount
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StaggeredRollingNumber(
+              amount: 100000,
+              isLoaded: true,
+              duration: Duration(milliseconds: 300),
+            ),
+          ),
+        ),
+      );
+
+      // Pump 1 frame – numbers should already be at final settled digits without re-rolling from 0
+      await tester.pump();
+      expect(find.bySemanticsLabel('₦100,000'), findsOneWidget);
+      expect(find.text('1'), findsWidgets);
+    });
+
+    testWidgets('retains state when scrolled off-screen and back in a ListView', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListView(
+              children: [
+                const StaggeredRollingNumber(
+                  amount: 750000,
+                  isLoaded: true,
+                  duration: Duration(milliseconds: 200),
+                ),
+                Container(height: 2000, color: Colors.blue),
+                const Text('Bottom Marker'),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('₦750,000'), findsOneWidget);
+
+      // Scroll to bottom
+      await tester.drag(find.byType(ListView), const Offset(0, -1500));
+      await tester.pumpAndSettle();
+      expect(find.text('Bottom Marker'), findsOneWidget);
+
+      // Scroll back to top
+      await tester.drag(find.byType(ListView), const Offset(0, 1500));
+      await tester.pump();
+
+      // Number should be intact and not reset
+      expect(find.bySemanticsLabel('₦750,000'), findsOneWidget);
+      expect(find.text('7'), findsWidgets);
+    });
   });
 }

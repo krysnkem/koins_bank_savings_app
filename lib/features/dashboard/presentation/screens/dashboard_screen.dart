@@ -53,18 +53,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ref.read(postsNotifierProvider.notifier).load(),
           ]);
         },
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          children: const [
-            DashboardHeaderSection(),
-            SizedBox(height: AppSpacing.lg),
-            DashboardQuickActionsSection(),
-            SizedBox(height: AppSpacing.xl),
-            DashboardRecentSavingsSection(),
-            SizedBox(height: AppSpacing.lg),
-            DashboardPostsSection(),
-          ],
+        child: const SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(AppSpacing.screenPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DashboardHeaderSection(),
+              SizedBox(height: AppSpacing.lg),
+              DashboardQuickActionsSection(),
+              SizedBox(height: AppSpacing.xl),
+              DashboardRecentSavingsSection(),
+              SizedBox(height: AppSpacing.lg),
+              DashboardPostsSection(),
+            ],
+          ),
         ),
       ),
     );

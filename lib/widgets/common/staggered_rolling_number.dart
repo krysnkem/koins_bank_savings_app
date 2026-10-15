@@ -33,8 +33,12 @@ class StaggeredRollingNumber extends StatefulWidget {
 }
 
 class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late final AnimationController _controller;
+  num? _lastAnimatedAmount;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -44,6 +48,7 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
       duration: widget.duration,
     );
     if (widget.isLoaded) {
+      _lastAnimatedAmount = widget.amount;
       _controller.forward();
     }
   }
@@ -54,9 +59,11 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
     if (widget.duration != oldWidget.duration) {
       _controller.duration = widget.duration;
     }
-    if (widget.isLoaded &&
-        (!oldWidget.isLoaded || widget.amount != oldWidget.amount)) {
-      _controller.forward(from: 0.0);
+    if (widget.isLoaded) {
+      if (!oldWidget.isLoaded || widget.amount != _lastAnimatedAmount) {
+        _lastAnimatedAmount = widget.amount;
+        _controller.forward(from: 0.0);
+      }
     }
   }
 
@@ -68,6 +75,7 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final effectiveStyle =
         widget.style ?? Theme.of(context).textTheme.headlineMedium;
     final formatted = Formatters.naira(
