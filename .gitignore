@@ -58,11 +58,11 @@ coverage/
 
 # Screenshots / Visual testing artifacts (Showcase images whitelisted for repository deliverables)
 screenshots/*
-!screenshots/08_gorouter_login.png
-!screenshots/09_gorouter_dashboard.png
-!screenshots/10_gorouter_savings_tab.png
+!screenshots/01_login_screen.png
+!screenshots/02_dashboard_screen.png
+!screenshots/02b_dashboard_scrolled.png
+!screenshots/03_savings_products_screen.png
+!screenshots/04_savings_details_screen.png
+!screenshots/05_create_savings_screen.png
 !screenshots/100_my_savings_active_plans.png
-!screenshots/12_gorouter_more_tab.png
-!screenshots/14_gorouter_create_savings.png
-!screenshots/67_duration_dropdown_open.png
-!screenshots/88_savings_created_result.png
+!screenshots/06_profile_screen.png
