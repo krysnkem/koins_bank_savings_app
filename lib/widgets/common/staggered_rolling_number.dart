@@ -24,7 +24,7 @@ class StaggeredRollingNumber extends StatefulWidget {
     this.isLoaded = true,
     this.showDecimals = false,
     this.style,
-    this.duration = const Duration(milliseconds: 1600),
+    this.duration = const Duration(milliseconds: 2400),
     this.curve = Curves.easeOutCubic,
   });
 
@@ -49,7 +49,11 @@ class _StaggeredRollingNumberState extends State<StaggeredRollingNumber>
     );
     if (widget.isLoaded) {
       _lastAnimatedAmount = widget.amount;
-      _controller.forward();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _controller.forward(from: 0.0);
+        }
+      });
     }
   }
 
@@ -166,18 +170,25 @@ class _RollingDigitColumn extends StatelessWidget {
     required this.style,
     required this.animation,
     required this.curve,
-  })  : digitSequence = _buildSequence(targetDigit, digitIndex),
-        targetIndex = _calculateTargetIndex(targetDigit, digitIndex),
+  })  : digitSequence = _buildSequence(targetDigit, digitIndex, totalDigits),
+        targetIndex = _calculateTargetIndex(targetDigit, digitIndex, totalDigits),
         start = _calculateStart(digitIndex, totalDigits),
         end = _calculateEnd(digitIndex, totalDigits);
 
-  static int _calculateCycles(int digitIndex) {
-    // Leftmost digits spin 1 full cycle; deeper digits spin up to 2 full cycles
-    return 1 + (digitIndex >= 3 ? 1 : 0);
+  static int _calculateCycles(int digitIndex, int totalDigits) {
+    if (totalDigits <= 1) return 2;
+    // Progressive cycles: leftmost digits spin at least 2 full cycles (20+ numbers),
+    // deeper digits spin up to 5 full cycles (50+ numbers) for high-speed reel feel.
+    final progressive = (digitIndex / (totalDigits - 1) * 3).round();
+    return 2 + progressive;
   }
 
-  static List<String> _buildSequence(int targetDigit, int digitIndex) {
-    final cycles = _calculateCycles(digitIndex);
+  static List<String> _buildSequence(
+    int targetDigit,
+    int digitIndex,
+    int totalDigits,
+  ) {
+    final cycles = _calculateCycles(digitIndex, totalDigits);
     final sequence = <String>[];
     for (int c = 0; c < cycles; c++) {
       for (int d = 0; d <= 9; d++) {
@@ -187,24 +198,33 @@ class _RollingDigitColumn extends StatelessWidget {
     for (int d = 0; d <= targetDigit; d++) {
       sequence.add('$d');
     }
+    // Safety buffer digits after target to prevent clipping or empty space
+    for (int d = 0; d <= 9; d++) {
+      sequence.add('$d');
+    }
     return sequence;
   }
 
-  static int _calculateTargetIndex(int targetDigit, int digitIndex) {
-    final cycles = _calculateCycles(digitIndex);
+  static int _calculateTargetIndex(
+    int targetDigit,
+    int digitIndex,
+    int totalDigits,
+  ) {
+    final cycles = _calculateCycles(digitIndex, totalDigits);
     return (cycles * 10) + targetDigit;
   }
 
   static double _calculateStart(int digitIndex, int totalDigits) {
     if (totalDigits <= 1) return 0.0;
-    // Micro-staggered start: all columns begin rolling within the first 15% of animation
-    return (digitIndex * 0.03).clamp(0.0, 0.15);
+    // Micro-staggered start: all columns begin rolling within the first 8% of animation
+    return (digitIndex * 0.02).clamp(0.0, 0.08);
   }
 
   static double _calculateEnd(int digitIndex, int totalDigits) {
     if (totalDigits <= 1) return 1.0;
-    // Staggered finish: left digits lock first, right digits lock sequentially
-    return (0.55 + 0.45 * (digitIndex / (totalDigits - 1))).clamp(0.0, 1.0);
+    // Staggered finish: left digits lock first (around 58% ~ 1.4s), right digits lock sequentially
+    final ratio = digitIndex / (totalDigits - 1);
+    return (0.58 + 0.42 * ratio).clamp(0.0, 1.0);
   }
 
   @override
