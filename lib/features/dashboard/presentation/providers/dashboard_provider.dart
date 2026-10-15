@@ -31,13 +31,7 @@ class DashboardNotifier extends AutoDisposeNotifier<DashboardState> {
         posts: data.posts,
       );
     } catch (e) {
-      if (e is AppException) {
-        state = DashboardError(e.message);
-      } else {
-        state = DashboardError(
-          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
-        );
-      }
+      state = DashboardError(ErrorHandler.getUserMessage(e));
     }
   }
 }

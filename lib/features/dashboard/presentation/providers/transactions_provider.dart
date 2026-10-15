@@ -35,13 +35,7 @@ class TransactionsNotifier extends AutoDisposeNotifier<TransactionsState> {
         totalInflow: totalInflow,
       );
     } catch (e) {
-      if (e is AppException) {
-        state = TransactionsError(e.message);
-      } else {
-        state = TransactionsError(
-          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
-        );
-      }
+      state = TransactionsError(ErrorHandler.getUserMessage(e));
     }
   }
 }

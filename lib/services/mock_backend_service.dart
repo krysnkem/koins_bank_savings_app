@@ -60,13 +60,19 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    final userRow = await _databaseService.getUserByEmail(email);
-    if (userRow != null && userRow['password'] == password) {
-      return AuthUser(
-        fullName: userRow['full_name']?.toString() ?? '',
-        email: userRow['email']?.toString() ?? '',
-        phone: userRow['phone']?.toString() ?? '',
-      );
+    try {
+      final userRow = await _databaseService.getUserByEmail(email);
+      if (userRow != null && userRow['password'] == password) {
+        return AuthUser(
+          fullName: userRow['full_name']?.toString() ?? '',
+          email: userRow['email']?.toString() ?? '',
+          phone: userRow['phone']?.toString() ?? '',
+        );
+      }
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw ErrorHandler.toAppException(e);
     }
     throw const AuthException('Invalid email or password');
   }
@@ -76,17 +82,23 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    final rows = await _databaseService.getSavingsProducts();
-    return rows.map((r) {
-      return SavingsProduct(
-        id: r['id'].toString(),
-        name: r['name'].toString(),
-        interestRate: (r['interest_rate'] as num).toDouble(),
-        duration: r['duration'].toString(),
-        shortDescription: r['short_description'].toString(),
-        minimumDeposit: (r['minimum_deposit'] as num).toDouble(),
-      );
-    }).toList();
+    try {
+      final rows = await _databaseService.getSavingsProducts();
+      return rows.map((r) {
+        return SavingsProduct(
+          id: r['id'].toString(),
+          name: r['name'].toString(),
+          interestRate: (r['interest_rate'] as num).toDouble(),
+          duration: r['duration'].toString(),
+          shortDescription: r['short_description'].toString(),
+          minimumDeposit: (r['minimum_deposit'] as num).toDouble(),
+        );
+      }).toList();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw ErrorHandler.toAppException(e);
+    }
   }
 
   @override
@@ -94,16 +106,22 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    final row = await _databaseService.getProductById(id);
-    if (row != null) {
-      return SavingsProduct(
-        id: row['id'].toString(),
-        name: row['name'].toString(),
-        interestRate: (row['interest_rate'] as num).toDouble(),
-        duration: row['duration'].toString(),
-        shortDescription: row['short_description'].toString(),
-        minimumDeposit: (row['minimum_deposit'] as num).toDouble(),
-      );
+    try {
+      final row = await _databaseService.getProductById(id);
+      if (row != null) {
+        return SavingsProduct(
+          id: row['id'].toString(),
+          name: row['name'].toString(),
+          interestRate: (row['interest_rate'] as num).toDouble(),
+          duration: row['duration'].toString(),
+          shortDescription: row['short_description'].toString(),
+          minimumDeposit: (row['minimum_deposit'] as num).toDouble(),
+        );
+      }
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw ErrorHandler.toAppException(e);
     }
     throw const ServerException('Product not found');
   }
@@ -113,23 +131,30 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    final rows = await _databaseService.getSavingsPlans(
-      email: managedUserEmail,
-    );
-    return rows.map((r) {
-      return SavingsPlan(
-        id: r['id'].toString(),
-        name: r['name'].toString(),
-        productId: r['product_id'].toString(),
-        productName: r['product_name'].toString(),
-        amount: (r['amount'] as num).toDouble(),
-        targetAmount: (r['target_amount'] as num).toDouble(),
-        monthlyContribution: (r['monthly_contribution'] as num).toDouble(),
-        frequency: r['frequency'].toString(),
-        duration: r['duration'].toString(),
-        createdAt: DateTime.tryParse(r['created_at'].toString()) ?? DateTime.now(),
+    try {
+      final rows = await _databaseService.getSavingsPlans(
+        email: managedUserEmail,
       );
-    }).toList();
+      return rows.map((r) {
+        return SavingsPlan(
+          id: r['id'].toString(),
+          name: r['name'].toString(),
+          productId: r['product_id'].toString(),
+          productName: r['product_name'].toString(),
+          amount: (r['amount'] as num).toDouble(),
+          targetAmount: (r['target_amount'] as num).toDouble(),
+          monthlyContribution: (r['monthly_contribution'] as num).toDouble(),
+          frequency: r['frequency'].toString(),
+          duration: r['duration'].toString(),
+          createdAt:
+              DateTime.tryParse(r['created_at'].toString()) ?? DateTime.now(),
+        );
+      }).toList();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw ErrorHandler.toAppException(e);
+    }
   }
 
   @override
@@ -143,59 +168,65 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    final productRow = await _databaseService.getProductById(productId);
-    if (productRow == null) {
-      throw ServerException('Unknown productId: $productId');
+    try {
+      final productRow = await _databaseService.getProductById(productId);
+      if (productRow == null) {
+        throw ServerException('Unknown productId: $productId');
+      }
+      final productName = productRow['name'].toString();
+
+      final now = DateTime.now();
+      final planId = 'plan-${now.millisecondsSinceEpoch}';
+
+      final planMap = {
+        'id': planId,
+        'user_email': managedUserEmail,
+        'product_id': productId,
+        'product_name': productName,
+        'name': name,
+        'amount': 0.0,
+        'target_amount': targetAmount,
+        'monthly_contribution': monthlyContribution,
+        'frequency': 'Monthly',
+        'duration': duration,
+        'status': 'active',
+        'created_at': now.toIso8601String(),
+      };
+      await _databaseService.insertSavingsPlan(planMap);
+
+      // Record creation event in transactions table
+      final txMap = {
+        'id': 'tx-${now.millisecondsSinceEpoch}',
+        'user_email': managedUserEmail,
+        'plan_id': planId,
+        'title': '$name Plan Created',
+        'category': productName,
+        'amount': monthlyContribution,
+        'is_credit': 1,
+        'status': 'Completed',
+        'date_label': 'Just now',
+        'icon_key': 'shield',
+        'created_at': now.toIso8601String(),
+      };
+      await _databaseService.insertTransaction(txMap);
+
+      return SavingsPlan(
+        id: planId,
+        name: name,
+        productId: productId,
+        productName: productName,
+        amount: 0.0,
+        targetAmount: targetAmount,
+        monthlyContribution: monthlyContribution,
+        frequency: 'Monthly',
+        duration: duration,
+        createdAt: now,
+      );
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw ErrorHandler.toAppException(e);
     }
-    final productName = productRow['name'].toString();
-
-    final now = DateTime.now();
-    final planId = 'plan-${now.millisecondsSinceEpoch}';
-
-    final planMap = {
-      'id': planId,
-      'user_email': managedUserEmail,
-      'product_id': productId,
-      'product_name': productName,
-      'name': name,
-      'amount': 0.0,
-      'target_amount': targetAmount,
-      'monthly_contribution': monthlyContribution,
-      'frequency': 'Monthly',
-      'duration': duration,
-      'status': 'active',
-      'created_at': now.toIso8601String(),
-    };
-    await _databaseService.insertSavingsPlan(planMap);
-
-    // Record creation event in transactions table
-    final txMap = {
-      'id': 'tx-${now.millisecondsSinceEpoch}',
-      'user_email': managedUserEmail,
-      'plan_id': planId,
-      'title': '$name Plan Created',
-      'category': productName,
-      'amount': monthlyContribution,
-      'is_credit': 1,
-      'status': 'Completed',
-      'date_label': 'Just now',
-      'icon_key': 'shield',
-      'created_at': now.toIso8601String(),
-    };
-    await _databaseService.insertTransaction(txMap);
-
-    return SavingsPlan(
-      id: planId,
-      name: name,
-      productId: productId,
-      productName: productName,
-      amount: 0.0,
-      targetAmount: targetAmount,
-      monthlyContribution: monthlyContribution,
-      frequency: 'Monthly',
-      duration: duration,
-      createdAt: now,
-    );
   }
 
   @override
@@ -204,19 +235,26 @@ class MockBackendService implements BackendService {
 
     final uri = Uri.parse('${AppConstants.baseUrl}/posts?limit=3');
     try {
-      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 5));
+      final res =
+          await _httpClient.get(uri).timeout(const Duration(seconds: 5));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
         final posts = (data['posts'] as List).cast<Map<String, dynamic>>();
         return posts.map(DummyPost.fromJson).toList();
+      } else if (res.statusCode >= 500) {
+        throw const ServerException(
+          'The remote server is temporarily unavailable. Please try again shortly.',
+        );
       } else {
-        throw ServerException('Failed to fetch posts from DummyJSON (HTTP ${res.statusCode})');
+        throw ServerException(
+          'Failed to fetch posts from DummyJSON (HTTP ${res.statusCode})',
+        );
       }
     } on AppException {
       rethrow;
     } catch (e) {
-      throw ServerException('Failed to fetch posts from DummyJSON: $e');
+      throw ErrorHandler.toAppException(e);
     }
   }
 
@@ -225,9 +263,13 @@ class MockBackendService implements BackendService {
     await _ensureOnline();
     await _simulateLatency();
 
-    final rows = await _databaseService.getTransactions(
-      email: managedUserEmail,
-    );
-    return rows.map(TransactionItem.fromMap).toList();
+    try {
+      final rows = await _databaseService.getTransactions(
+        email: managedUserEmail,
+      );
+      return rows.map(TransactionItem.fromMap).toList();
+    } catch (e) {
+      throw ErrorHandler.toAppException(e);
+    }
   }
 }

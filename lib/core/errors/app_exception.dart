@@ -1,3 +1,5 @@
+export 'error_handler.dart';
+
 /// Base exception class for the application
 class AppException implements Exception {
   final String message;
@@ -31,4 +33,11 @@ class ValidationException extends AppException {
 class AuthException extends AppException {
   const AuthException([super.message = 'Authentication failed'])
       : super(code: 'AUTH_ERROR');
+}
+
+class AppDatabaseException extends AppException {
+  const AppDatabaseException([
+    super.message =
+        'Unable to read or update local financial records. Please try again.',
+  ]) : super(code: 'DATABASE_ERROR');
 }

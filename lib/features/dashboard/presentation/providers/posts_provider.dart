@@ -24,13 +24,7 @@ class PostsNotifier extends AutoDisposeNotifier<PostsState> {
       final posts = await _postsRepository.getPosts();
       state = PostsLoaded(posts);
     } catch (e) {
-      if (e is AppException) {
-        state = PostsError(e.message);
-      } else {
-        state = PostsError(
-          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
-        );
-      }
+      state = PostsError(ErrorHandler.getUserMessage(e));
     }
   }
 }

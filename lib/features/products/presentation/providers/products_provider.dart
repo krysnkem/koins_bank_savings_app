@@ -25,13 +25,7 @@ class ProductsNotifier extends Notifier<ProductsState> {
       final products = await _repository.getProducts();
       state = ProductsLoaded(products);
     } catch (e) {
-      if (e is AppException) {
-        state = ProductsError(e.message);
-      } else {
-        state = ProductsError(
-          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
-        );
-      }
+      state = ProductsError(ErrorHandler.getUserMessage(e));
     }
   }
 

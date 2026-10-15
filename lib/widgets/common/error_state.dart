@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/errors/error_handler.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 
@@ -15,6 +16,8 @@ class ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayMessage = ErrorHandler.getUserMessage(message);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -28,7 +31,7 @@ class ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              message,
+              displayMessage,
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),

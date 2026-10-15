@@ -25,13 +25,7 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await _repository.login(email: email, password: password);
       state = AuthAuthenticated(user);
     } catch (e) {
-      if (e is AppException) {
-        state = AuthError(e.message);
-      } else {
-        state = AuthError(
-          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
-        );
-      }
+      state = AuthError(ErrorHandler.getUserMessage(e));
     }
   }
 

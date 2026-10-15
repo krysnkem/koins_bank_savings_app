@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import 'create_savings_state.dart';
 import 'savings_provider.dart';
 
@@ -89,7 +90,7 @@ class CreateSavingsNotifier
       );
     } catch (e) {
       state = CreateSavingsError(
-        e.toString(),
+        ErrorHandler.getUserMessage(e),
         productId: state.productId,
         duration: state.duration,
       );

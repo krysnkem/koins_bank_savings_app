@@ -28,13 +28,7 @@ class SavingsNotifier extends Notifier<SavingsState> {
       final plans = await _repository.getPlans();
       state = SavingsLoaded(plans);
     } catch (e) {
-      if (e is AppException) {
-        state = SavingsError(e.message);
-      } else {
-        state = SavingsError(
-          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
-        );
-      }
+      state = SavingsError(ErrorHandler.getUserMessage(e));
     }
   }
 
@@ -58,13 +52,7 @@ class SavingsNotifier extends Notifier<SavingsState> {
       state = SavingsLoaded(updatedPlans);
       return plan;
     } catch (e) {
-      if (e is AppException) {
-        state = SavingsError(e.message);
-      } else {
-        state = SavingsError(
-          e.toString().replaceFirst(RegExp(r'^(App)?Exception:\s*'), ''),
-        );
-      }
+      state = SavingsError(ErrorHandler.getUserMessage(e));
       return null;
     }
   }
