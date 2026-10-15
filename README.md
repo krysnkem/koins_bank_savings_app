@@ -8,7 +8,7 @@ A high-performance fintech mobile savings application built for the **Koins MFB 
 
 > **Flutter Version**: Flutter 3.29.x (Dart 3.7.x)  
 > **Pre-built APK**: [Download via GitHub Releases](https://github.com/krysnkem/koins_bank_savings_app/releases/latest/download/app-release.apk) or locally at [`apk/app-release.apk`](./apk/app-release.apk)  
-> **Test Suite**: 111 Automated Unit & Widget Tests (100% Passing)
+> **Test Suite**: 113 Automated Unit & Widget Tests (100% Passing)
 
 ---
 
@@ -105,8 +105,8 @@ Beyond baseline requirements, the following enhancements were implemented to pro
    - Quick-fill button on the login screen for evaluator convenience.
 6. **Custom Branded Launcher & Adaptive Icons**:
    - Multi-faceted origami "K" brandmark rendered to native Android adaptive icons (`mipmap-anydpi-v26`) and iOS `AppIcon.appiconset` via `flutter_launcher_icons`.
-7. **111-Test Automated Suite**:
-   - 111 unit, widget, and notifier tests with 100% pass rate.
+7. **113-Test Automated Suite**:
+   - 113 unit, widget, and notifier tests with 100% pass rate.
 
 ---
 
@@ -129,7 +129,7 @@ fvm flutter pub get
 # 3. Run static analysis (0 warnings, 0 errors)
 fvm flutter analyze
 
-# 4. Run automated test suite (111 passed)
+# 4. Run automated test suite (113 passed)
 fvm flutter test
 
 # 5. Run on device / emulator
