@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/images/app_logo.png" width="96" height="96" alt="Koins App Logo" />
+</p>
+
 # Koins Savings App
 
 A high-performance fintech mobile savings application built for the **Koins MFB Flutter Developer Technical Assessment**.
