@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../widgets/common/app_text_field.dart';
 
@@ -132,6 +133,9 @@ class CreateSavingsFormFields extends StatelessWidget {
             hint: 'Enter target amount',
             standaloneLabel: true,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              ThousandsSeparatorInputFormatter(),
+            ],
             prefix: const Text(
               '₦',
               style: TextStyle(
@@ -155,7 +159,8 @@ class CreateSavingsFormFields extends StatelessWidget {
                 ),
               ),
             ),
-            validator: Validators.amount,
+            validator: (v) =>
+                Validators.targetAmount(v, monthlyController.text),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -175,6 +180,9 @@ class CreateSavingsFormFields extends StatelessWidget {
             hint: 'Enter monthly contribution',
             standaloneLabel: true,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              ThousandsSeparatorInputFormatter(),
+            ],
             prefix: const Text(
               '₦',
               style: TextStyle(
@@ -198,7 +206,8 @@ class CreateSavingsFormFields extends StatelessWidget {
                 ),
               ),
             ),
-            validator: Validators.amount,
+            validator: (v) =>
+                Validators.monthlyContribution(v, targetController.text),
           ),
         ),
         const SizedBox(height: AppSpacing.md),

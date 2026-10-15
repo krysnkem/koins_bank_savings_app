@@ -79,6 +79,47 @@ void main() {
       expect(Validators.amount('5000'), isNull);
       expect(Validators.amount('120000'), isNull);
       expect(Validators.amount('1,200.50'), isNull);
+      expect(Validators.amount('100,000'), isNull);
+    });
+  });
+
+  group('Validators.targetAmount', () {
+    test('returns error when target is empty or invalid', () {
+      expect(Validators.targetAmount(null, '50,000'), 'Amount is required');
+      expect(Validators.targetAmount('', '50,000'), 'Amount is required');
+      expect(Validators.targetAmount('0', '50,000'), 'Enter a valid amount');
+    });
+
+    test('returns error when target is less than monthly contribution', () {
+      expect(
+        Validators.targetAmount('50,000', '100,000'),
+        'Total target amount cannot be less than monthly amount',
+      );
+      expect(
+        Validators.targetAmount('99,999', '100,000'),
+        'Total target amount cannot be less than monthly amount',
+      );
+    });
+
+    test('returns null when target is equal to or greater than monthly contribution', () {
+      expect(Validators.targetAmount('100,000', '100,000'), isNull);
+      expect(Validators.targetAmount('500,000', '50,000'), isNull);
+      expect(Validators.targetAmount('1,000,000', null), isNull);
+      expect(Validators.targetAmount('1,000,000', ''), isNull);
+    });
+  });
+
+  group('Validators.monthlyContribution', () {
+    test('returns error when monthly contribution exceeds target amount', () {
+      expect(
+        Validators.monthlyContribution('150,000', '100,000'),
+        'Monthly contribution cannot exceed total target amount',
+      );
+    });
+
+    test('returns null when monthly is less than or equal to target', () {
+      expect(Validators.monthlyContribution('50,000', '100,000'), isNull);
+      expect(Validators.monthlyContribution('100,000', '100,000'), isNull);
     });
   });
 }

@@ -59,8 +59,26 @@ class CreateSavingsNotifier
     );
 
     try {
-      final targetVal = double.parse(targetText.replaceAll(',', ''));
-      final monthlyVal = double.parse(monthlyText.replaceAll(',', ''));
+      final targetVal = double.tryParse(targetText.replaceAll(',', ''));
+      final monthlyVal = double.tryParse(monthlyText.replaceAll(',', ''));
+
+      if (targetVal == null || targetVal <= 0 || monthlyVal == null || monthlyVal <= 0) {
+        state = CreateSavingsError(
+          'Enter a valid amount',
+          productId: state.productId,
+          duration: state.duration,
+        );
+        return;
+      }
+
+      if (targetVal < monthlyVal) {
+        state = CreateSavingsError(
+          'Total target amount cannot be less than monthly amount',
+          productId: state.productId,
+          duration: state.duration,
+        );
+        return;
+      }
 
       final plan = await ref.read(savingsNotifierProvider.notifier).create(
             name: name.trim(),

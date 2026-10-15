@@ -26,9 +26,29 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
   final _name = TextEditingController();
   final _target = TextEditingController();
   final _monthly = TextEditingController();
+  bool _hasSubmitted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _target.addListener(_onAmountChanged);
+    _monthly.addListener(_onAmountChanged);
+  }
+
+  void _onAmountChanged() {
+    if (_hasSubmitted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _formKey.currentState?.validate();
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
+    _target.removeListener(_onAmountChanged);
+    _monthly.removeListener(_onAmountChanged);
     _name.dispose();
     _target.dispose();
     _monthly.dispose();
@@ -36,6 +56,7 @@ class _CreateSavingsScreenState extends ConsumerState<CreateSavingsScreen> {
   }
 
   void _submit() {
+    _hasSubmitted = true;
     ref
         .read(createSavingsNotifierProvider(widget.productId).notifier)
         .submit(

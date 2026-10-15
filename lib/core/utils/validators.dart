@@ -41,4 +41,32 @@ class Validators {
     }
     return null;
   }
+
+  static String? targetAmount(String? targetValue, String? monthlyValue) {
+    final baseValidation = amount(targetValue);
+    if (baseValidation != null) return baseValidation;
+
+    if (monthlyValue != null && monthlyValue.trim().isNotEmpty) {
+      final target = double.tryParse(targetValue!.replaceAll(',', ''));
+      final monthly = double.tryParse(monthlyValue.replaceAll(',', ''));
+      if (target != null && monthly != null && target < monthly) {
+        return 'Total target amount cannot be less than monthly amount';
+      }
+    }
+    return null;
+  }
+
+  static String? monthlyContribution(String? monthlyValue, String? targetValue) {
+    final baseValidation = amount(monthlyValue);
+    if (baseValidation != null) return baseValidation;
+
+    if (targetValue != null && targetValue.trim().isNotEmpty) {
+      final monthly = double.tryParse(monthlyValue!.replaceAll(',', ''));
+      final target = double.tryParse(targetValue.replaceAll(',', ''));
+      if (monthly != null && target != null && monthly > target) {
+        return 'Monthly contribution cannot exceed total target amount';
+      }
+    }
+    return null;
+  }
 }
