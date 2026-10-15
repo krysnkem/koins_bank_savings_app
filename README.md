@@ -226,6 +226,12 @@ Beyond the baseline requirements in the assessment brief, several enterprise-gra
 10. **Centralized User-Friendly Error Sanitization (`ErrorHandler`)**:
    - Implemented centralized exception interceptors ensuring no raw stack traces, OS socket errors (`errno = 7`, `Failed host lookup`), or SQLite syntax codes ever leak to screens. Automatically maps failures to polite, actionable guidance with retry triggers.
 
+11. **Production-Ready App Launcher Icons & Adaptive Icons**:
+   - Extracted the multi-faceted origami "K" brandmark vector geometry from the Login Screen's `AppLogo` (`OrigamiKPainter`) and generated high-resolution 1024x1024 master assets ([`assets/images/app_launcher_icon.png`](file:///Users/Chris/magic/koins_savings_app/assets/images/app_launcher_icon.png)).
+   - Automated platform generation using `flutter_launcher_icons`:
+     - **Android**: Generated legacy densities (`mdpi` through `xxxhdpi`) and Android 8.0+ adaptive vector layers (`mipmap-anydpi-v26/launcher_icon.xml`) with a clean `#FFFFFF` background and centered safe-zone foreground. Updated `android:label` in [`AndroidManifest.xml`](file:///Users/Chris/magic/koins_savings_app/android/app/src/main/AndroidManifest.xml) to clean `"Koins"`.
+     - **iOS**: Overwrote all asset sizes in `AppIcon.appiconset` up to 1024x1024 with `remove_alpha_ios: true` for Apple App Store compliance.
+
 ---
 
 ## Technology Stack & Packages Used
@@ -243,6 +249,7 @@ The application utilizes production-grade libraries from the Flutter ecosystem:
 | **`google_fonts`** | `^6.2.1` | Typographic design system loading Google's `Inter` font family for fintech UI clarity. |
 | **`intl`** | `^0.19.0` | Locale-aware currency formatting (`₦`), date parsing, and number grouping. |
 | **`connectivity_plus`** | `^6.1.4` | Network status monitoring powering the `NetworkChecker` abstraction. |
+| **`flutter_launcher_icons`** | `^0.14.4` | Automated generation of adaptive Android mipmap icon layers and iOS AppIcon iconsets from master vector assets. |
 | **`flutter_lints`** | `^5.0.0` | Recommended static analysis and style rules for Flutter and Dart codebases. |
 
 ---
@@ -268,6 +275,13 @@ The application adheres strictly to Material 3 principles with a **100% tokenize
 - **Border Radius**: `AppRadius.input` ($12\text{px}$), `AppRadius.card` ($16\text{px}$), `AppRadius.button` ($12\text{px}$), `AppRadius.pill` ($999\text{px}$).
 - **Card Shadow**: `AppShadows.card` — subtle blur ($16\text{px}$) with gentle vertical offset ($4\text{px}$) and $5\%$ black opacity.
 - **Elevation Glow**: `AppShadows.avatarGlow` — subtle $15\%$ primary green glow for the profile avatar.
+
+### Official Brandmark & App Launcher Icons
+- **Origami 'K' Brandmark**: Built with custom multi-faceted vector geometry using Flutter's `CustomPainter` ([`OrigamiKPainter`](file:///Users/Chris/magic/koins_savings_app/lib/widgets/common/app_logo.dart)). It blends three distinct emerald and mint linear gradients:
+  - *Left Vertical Ribbon*: Emerald gradient (`#34D399` $\rightarrow$ `#0B9234` $\rightarrow$ `#065F22`).
+  - *Upper Diagonal Wing*: Vibrant Mint gradient (`#6EE7B7` $\rightarrow$ `#10B981` $\rightarrow$ `#047857`).
+  - *Lower Diagonal Wing*: Forest-to-Deep Emerald gradient (`#10B981` $\rightarrow$ `#064E3B` $\rightarrow$ `#022C22`).
+- **Platform Launcher Icons**: Master 1024x1024 assets generate all native home screen icons and adaptive icon containers across Android (`mipmap-anydpi-v26`) and iOS (`AppIcon.appiconset`), ensuring consistent brand recognition from the device home screen directly into the Login flow.
 
 ---
 
