@@ -168,12 +168,13 @@ Create a **next-generation, award-winning fintech interface** (iOS & Android) th
   1. Header: "Create Savings Plan" + explanatory subtitle.
   2. **Savings Name Block:** Title "Savings Name" on top; input box with pencil icon and hint "Enter savings name".
   3. **Product Type Block:** Title "Product Type" on top; dropdown container with piggy bank icon and dropdown arrow.
-  4. **Target Amount Block:** Title "Target Amount" on top; input box with centered `₦` prefix, hint "Enter target amount", and right-aligned centered `NGN` chip (`AppRadius.tag`).
-  5. **Monthly Contribution Block:** Title "Monthly Contribution" on top; input box with centered `₦` prefix, hint "Enter monthly contribution", and right-aligned centered `NGN` chip (`AppRadius.tag`).
+  4. **Target Amount Block:** Title "Target Amount" on top; input box with centered `₦` prefix, hint "Enter target amount", and right-aligned centered `NGN` chip (`AppRadius.tag`). Formatted dynamically with comma thousands separators via `intl` (e.g. `100,000`).
+  5. **Monthly Contribution Block:** Title "Monthly Contribution" on top; input box with centered `₦` prefix, hint "Enter monthly contribution", and right-aligned centered `NGN` chip (`AppRadius.tag`). Formatted dynamically with comma thousands separators via `intl` (e.g. `50,000`).
   6. **Duration Block:** Title "Duration" on top; dropdown container with calendar icon and "Select duration".
-  7. **Motivational Banner:** Mint green security banner with `Icons.verified_user` (*"Your savings plan helps you stay consistent and achieve your financial goals."*) with `AppRadius.card`.
-  8. **Action Button:** Full-width "Create" CTA with `AppRadius.button`.
-- **Design Directives:** Two-tier standalone label on top + inner box below pattern; perfect vertical centering; crisp white canvas (`#FFFFFF`).
+  7. **Cross-Field Amount Validation:** Total Target Amount must not be less than Monthly Contribution (`targetAmount >= monthlyContribution`). Displays `"Total target amount cannot be less than monthly amount"` if violated.
+  8. **Motivational Banner:** Mint green security banner with `Icons.verified_user` (*"Your savings plan helps you stay consistent and achieve your financial goals."*) with `AppRadius.card`.
+  9. **Action Button:** Full-width "Create" CTA with `AppRadius.button`.
+- **Design Directives:** Two-tier standalone label on top + inner box below pattern; perfect vertical centering; dynamic comma formatting via `intl`; crisp white canvas (`#FFFFFF`).
 
 ---
 

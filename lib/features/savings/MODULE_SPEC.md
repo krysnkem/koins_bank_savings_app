@@ -154,6 +154,8 @@ class SavingsError extends SavingsState {
 **Logic**
 - All fields required
 - Amounts must be valid positive numbers
+- **Dynamic Amount Formatting**: Amount fields (`Target Amount` and `Monthly Contribution`) use `ThousandsSeparatorInputFormatter` (backed by the `intl` package's `NumberFormat.decimalPattern('en_US')`) to dynamically format digits with comma thousands separators as user types (e.g. `100000` -> `100,000`).
+- **Cross-Field Amount Validation**: Total target amount must not be less than the monthly contribution (`targetAmount >= monthlyContribution`). If `targetAmount < monthlyContribution`, displays `'Total target amount cannot be less than monthly amount'` and blocks submission.
 - On submit → validate → call `savingsProvider.createPlan(...)`
 - Success → show SnackBar “Savings Created Successfully” → navigate back to Dashboard
 - Pre-select product when navigated from Product Details

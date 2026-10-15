@@ -52,9 +52,9 @@ Scaffold
 |------------------------|-------------------|-------------------|-------------------------------------|--------------------------------------------|
 | Savings Name           | TextFormField     | text              | Required                            | Hint: “e.g. Emergency Fund”                |
 | Product Type           | DropdownButtonFormField | —            | Required                            | Options from products list                 |
-| Target Amount          | TextFormField     | number / decimal  | Required + > 0                      | Prefix: ₦                                  |
-| Monthly Contribution   | TextFormField     | number / decimal  | Required + > 0                      | Prefix: ₦                                  |
-| Duration               | TextFormField or Dropdown | text      | Required                            | Can be free text or fixed options          |
+| Target Amount          | TextFormField     | number            | Required + > 0 + >= Monthly Contrib | Prefix: ₦, Suffix: NGN, Formatted: 100,000 |
+| Monthly Contribution   | TextFormField     | number            | Required + > 0 + <= Target Amount   | Prefix: ₦, Suffix: NGN, Formatted: 10,000  |
+| Duration               | DropdownButtonFormField | —           | Required                            | Options: 3, 6, 12, 24 Months               |
 
 ### Field Styling (all)
 - Outlined, filled white
@@ -68,8 +68,10 @@ Scaffold
 - Display: “Target Savings (12%)”
 
 ### Amount Fields
-- `inputFormatters`: FilteringTextInputFormatter for digits / decimal
-- Visual prefix “₦” (either in decoration or as leading widget)
+- `inputFormatters`: `ThousandsSeparatorInputFormatter()` using `intl`'s `NumberFormat.decimalPattern('en_US')`
+- Real-time thousand separator formatting as user types digits (e.g. `100000` -> `100,000`)
+- Visual prefix “₦” and trailing “NGN” badge
+- Cross-field validation: Total Target Amount cannot be less than Monthly Contribution (`targetAmount >= monthlyContribution`). Displays `"Total target amount cannot be less than monthly amount"` if violated.
 
 ---
 
@@ -87,7 +89,7 @@ Scaffold
 | State            | Behaviour                                                                 |
 |------------------|---------------------------------------------------------------------------|
 | Default          | Empty form (or product pre-selected)                                      |
-| Validation Error | Red messages under invalid fields                                         |
+| Validation Error | Red messages under invalid fields (e.g. target < monthly validation error) |
 | Loading          | Button spinner, form disabled                                             |
 | Success          | SnackBar “Savings Created Successfully” → pop to Dashboard                |
 | Network / Server | SnackBar with error message                                               |
@@ -97,7 +99,7 @@ Scaffold
 ## Interactions
 
 1. User fills form and taps **Create**
-2. Form validates → if invalid, show field errors
+2. Form validates → if invalid (or if Target Amount < Monthly Contribution), show field errors
 3. If valid → call `savingsProvider.createPlan(...)`
 4. On success:
    - Show floating SnackBar “Savings Created Successfully”
@@ -111,7 +113,8 @@ Scaffold
 - [ ] All 5 fields present and required
 - [ ] Product dropdown populated from real products list
 - [ ] Product is pre-selected when coming from Details
-- [ ] Amount fields accept only numbers and show ₦
+- [ ] Amount fields accept numbers, dynamically format with commas using `intl` (e.g. `100,000`), and show ₦
+- [ ] Target amount is validated to be greater than or equal to monthly contribution
 - [ ] Validation messages appear correctly
 - [ ] Loading state disables the button and shows spinner
 - [ ] Success shows exact message and returns to Dashboard

@@ -46,10 +46,13 @@ test/
 │   │   ├── products/
 │   │   │   └── products_repository_test.dart
 │   │   └── savings/
-│   │       └── savings_repository_test.dart
+│   │       ├── savings_local_data_source_test.dart
+│   │       ├── savings_repository_test.dart
+│   │       └── create_savings_notifier_test.dart
 │   └── utils/
 │       ├── validators_test.dart
-│       └── formatters_test.dart
+│       ├── formatters_test.dart
+│       └── thousands_separator_input_formatter_test.dart
 ├── widget/
 │   ├── login_screen_test.dart
 │   ├── create_savings_screen_test.dart
@@ -135,6 +138,8 @@ test/
 ### 4.2 CreateSavingsScreen
 - All 5 fields are present
 - Validation errors appear for empty fields
+- Real-time comma thousands formatting works dynamically on Target Amount and Monthly Contribution via `intl`
+- Cross-field validation prevents submission when Target Amount is less than Monthly Contribution
 - Submit button shows loading state
 - Success triggers navigation / SnackBar (mock the provider)
 
