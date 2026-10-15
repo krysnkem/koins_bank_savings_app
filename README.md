@@ -76,7 +76,7 @@ All requirements specified in the technical assessment have been implemented:
 
 | # | Feature | Screen / Route | Implementation & Discovery |
 | :-: | :--- | :--- | :--- |
-| **1** | **Login & Validation** | `/login` | • Email (RFC 5322 regex) & Password ($\ge 8$ characters) validation.<br>• Password visibility toggle.<br>• Non-functional "Forgot Password" and "Register" stubs.<br>• Test credentials: `test@bank.com` / `Password123` (or tap **"Auto-fill Test Credentials"**). |
+| **1** | **Login & Validation** | `/login` | • Email (RFC 5322 regex) & Password ($\ge 8$ characters) validation.<br>• Password visibility toggle.<br>• Non-functional "Forgot Password" and "Register" stubs.<br>• Pre-filled test credentials: `test@bank.com` / `Password123` for instant evaluation. |
 | **2** | **Financial Dashboard** | `/dashboard` | • Dynamic time-based greeting (*"Good Morning, John Doe"*).<br>• Total savings balance (₦550,000) with animated rolling counter.<br>• Quick action cards (*"Create Savings"*, *"View Products"*).<br>• 3 recent savings plans with progress and contribution details. |
 | **3** | **Savings Products** | `/products` | • 4 tiered products (*Target Savings*, *Fixed Deposit*, *Education Savings*, *Vacation Savings*).<br>• 8% to 18% p.a. interest rates, tenures, short descriptions, and "View Details" CTA. |
 | **4** | **Product Details** | `/product/:id` | • Minimum deposit (₦5,000), interest rate, duration, and direct *"Create Savings Plan"* CTA. |
@@ -101,8 +101,8 @@ Beyond baseline requirements, the following enhancements were implemented to pro
    - Financial balances animate with a smooth digit-by-digit rolling ticker on load instead of displaying statically.
 4. **Real-Time Naira Input Formatter (`NairaInputFormatter`)**:
    - Currency inputs format automatically with Nigerian Naira (`₦`) symbol and comma thousands-separators as the user types without disrupting cursor placement.
-5. **One-Tap Test Credential Auto-Fill**:
-   - Quick-fill button on the login screen for evaluator convenience.
+5. **Pre-filled Test Credentials on Login**:
+   - Email and password fields are pre-filled by default with `test@bank.com` and `Password123` for evaluator convenience, while fully supporting clearing and entering custom inputs to test validation.
 6. **Custom Branded Launcher & Adaptive Icons**:
    - Multi-faceted origami "K" brandmark rendered to native Android adaptive icons (`mipmap-anydpi-v26`) and iOS `AppIcon.appiconset` via `flutter_launcher_icons`.
 7. **113-Test Automated Suite**:
