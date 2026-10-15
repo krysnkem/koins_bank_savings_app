@@ -7,6 +7,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../widgets/common/app_shimmer.dart';
 import '../../../../widgets/common/empty_state.dart';
 import '../../../../widgets/common/fade_entry.dart';
 import '../../../savings/data/models/savings_plan.dart';
@@ -70,19 +71,13 @@ class DashboardRecentSavingsSection extends ConsumerWidget {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: (savingsState is SavingsLoading || savingsState is SavingsInitial)
-              ? const Center(
+              ? const Column(
                   key: ValueKey('recent_savings_loading'),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
+                  children: [
+                    RecentSavingsCardShimmer(),
+                    RecentSavingsCardShimmer(),
+                    RecentSavingsCardShimmer(),
+                  ],
                 )
               : plans.isEmpty
                   ? const EmptyState(

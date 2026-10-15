@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_shadows.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../widgets/common/app_shimmer.dart';
 import '../../../../widgets/common/error_state.dart';
 import '../../../../widgets/common/fade_entry.dart';
 import '../../data/models/dummy_post.dart';
@@ -58,12 +59,13 @@ class DashboardPostsSection extends ConsumerWidget {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: switch (postsState) {
-            PostsInitial() || PostsLoading() => const Center(
+            PostsInitial() || PostsLoading() => const Column(
                 key: ValueKey('posts_loading'),
-                child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.lg),
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+                children: [
+                  PostCardShimmer(),
+                  PostCardShimmer(),
+                  PostCardShimmer(),
+                ],
               ),
             PostsError(:final message) => ErrorState(
                 key: const ValueKey('posts_error'),
