@@ -5,31 +5,32 @@ A high-performance fintech mobile savings application built for the **Koins MFB 
 > **Flutter Version**: Flutter 3.29.x (Dart 3.7.x) / Stable  
 > **Target Platforms**: Android (API 21+) & iOS (iOS 13+)  
 > **Pre-built APK**: [Download via GitHub Releases](https://github.com/krysnkem/koins_bank_savings_app/releases/latest/download/app-release.apk) or locally at [`apk/app-release.apk`](./apk/app-release.apk)  
-> **Test Coverage**: 106 Automated Unit & Widget Tests (100% Green)
+> **Test Coverage**: 110 Automated Unit & Widget Tests (100% Green)
 
 ---
 
 ## Table of Contents
 1. [Project Overview](#project-overview)
-2. [Architecture & Folder Structure Rationale](#architecture--folder-structure-rationale)
+2. [Development Methodology: Spec-Driven Development (SDD)](#development-methodology-spec-driven-development-sdd)
+3. [Architecture & Folder Structure Rationale](#architecture--folder-structure-rationale)
    - [Architectural Decision Record (ADR): Feature-First vs. Layer-First Structure](#architectural-decision-record-adr-feature-first-vs-layer-first-structure)
    - [Project Directory Layout](#project-directory-layout)
-3. [Assessment Feature Inventory & Discovery Guide](#assessment-feature-inventory--discovery-guide)
-4. [Robust Product Experience Enhancements](#robust-product-experience-enhancements)
-5. [Technology Stack & Packages Used](#technology-stack--packages-used)
-6. [Design System & Theming (Material 3)](#design-system--theming-material-3)
-7. [State Management Rationale (Riverpod 2.0+)](#state-management-rationale-riverpod-20)
-8. [Routing & Navigation (`go_router`)](#routing--navigation-go_router)
-9. [Local Storage Strategy (`shared_preferences`)](#local-storage-strategy-shared_preferences)
-10. [Abstracted Database Architecture & SQLite (`sqflite`)](#abstracted-database-architecture--sqlite-sqflite)
-11. [REST API Integration (DummyJSON Posts)](#rest-api-integration-dummyjson-posts)
-12. [Centralized Error Handling Architecture (`ErrorHandler`)](#centralized-error-handling-architecture-errorhandler)
-13. [Mock Authentication & Test Credentials](#mock-authentication--test-credentials)
-14. [Testing & Quality Assurance (106 Tests)](#testing--quality-assurance-106-tests)
-15. [Setup & Build Instructions](#setup--build-instructions)
-16. [Screenshots & Visual Showcase](#screenshots--visual-showcase)
-17. [Assumptions & Future Improvements](#assumptions--future-improvements)
-18. [Assessment Deliverables Checklist](#assessment-deliverables-checklist)
+4. [Assessment Feature Inventory & Discovery Guide](#assessment-feature-inventory--discovery-guide)
+5. [Robust Product Experience Enhancements](#robust-product-experience-enhancements)
+6. [Technology Stack & Packages Used](#technology-stack--packages-used)
+7. [Design System & Theming (Material 3)](#design-system--theming-material-3)
+8. [State Management Rationale (Riverpod 2.0+)](#state-management-rationale-riverpod-20)
+9. [Routing & Navigation (`go_router`)](#routing--navigation-go_router)
+10. [Local Storage Strategy (`shared_preferences`)](#local-storage-strategy-shared_preferences)
+11. [Abstracted Database Architecture & SQLite (`sqflite`)](#abstracted-database-architecture--sqlite-sqflite)
+12. [REST API Integration (DummyJSON Posts)](#rest-api-integration-dummyjson-posts)
+13. [Centralized Error Handling Architecture (`ErrorHandler`)](#centralized-error-handling-architecture-errorhandler)
+14. [Mock Authentication & Test Credentials](#mock-authentication--test-credentials)
+15. [Testing & Quality Assurance (110 Tests)](#testing--quality-assurance-110-tests)
+16. [Setup & Build Instructions](#setup--build-instructions)
+17. [Screenshots & Visual Showcase](#screenshots--visual-showcase)
+18. [Assumptions & Future Improvements](#assumptions--future-improvements)
+19. [Assessment Deliverables Checklist](#assessment-deliverables-checklist)
 
 ---
 
@@ -45,6 +46,47 @@ The **Koins Savings App** is designed for digital banking customers to manage sa
 - **Create Savings Plan**: Form with 5 required fields (Plan Name, Product Type Dropdown, Target Amount, Monthly Contribution, Duration Dropdown), client-side validation, instant write to disk and database, animated success feedback (`"Savings Created Successfully"`), and navigation back to Dashboard.
 - **User Profile & Security**: Customer full name, email, phone number, and a secure Logout action that clears the session and returns to Login.
 - **Public Mock REST API**: Live network consumption of `https://dummyjson.com/posts?limit=3` presented under **"Posts from Dummy JSON"** with tag badges, view counters, skeleton shimmers, and error/retry states.
+
+---
+
+## Development Methodology: Spec-Driven Development (SDD)
+
+To ensure exceptional code quality, architectural predictability, and zero regression risk across the codebase, development strictly adhered to **Spec-Driven Development (SDD)**:
+
+> **Core Principle**: *All business requirements, domain entities, service contracts, sealed state transitions, and UI geometries were formally drafted into technical specifications first before any code execution took place.*
+
+```mermaid
+flowchart LR
+    A["1. Requirements Ingestion<br/>(Assessment Brief & Constraints)"] --> B["2. Specification Drafting<br/>(Models, Contracts, State Machines)"]
+    B --> C["3. Architectural Foundation<br/>(Theme Tokens, Core, Router)"]
+    C --> D["4. Contract-First Implementation<br/>(Domain, Presentation, Repos)"]
+    D --> E["5. Verification & QA<br/>(110 Tests, Zero Analyzer Lints)"]
+```
+
+### The 4-Phase SDD Engineering Lifecycle:
+
+1. **Phase 1 — Requirements Deconstruction & Boundary Analysis**:
+   - Analyzed the assessment brief, accompanying deliverables, and technical criteria.
+   - Identified explicit deliverables (e.g. 5 required create fields, RFC email regex, password $\ge 8$, 4 products) as well as implicit requirements (e.g. offline fallback, cross-restart state persistence, robust error sanitization, decoupled REST vs. SQLite operations).
+
+2. **Phase 2 — Specification Drafting & Contract Definition**:
+   - Before executing code, comprehensive specifications were defined:
+     - **Data Contracts & Interfaces**: Defined abstract service contracts (`DatabaseService`, `SharedPreferencesService`, `BackendService`) to establish clean architectural boundaries before writing concrete SQLite or HTTP implementations.
+     - **Sealed State Machines**: Modeled every screen's lifecycle as a sealed class hierarchy (`Initial`, `Loading`, `Loaded`, `Error`), eliminating loose boolean flags (`isLoading`) and guaranteeing exhaustive compile-time pattern matching.
+     - **Validation & Formatting Rules**: Formulated explicit regex patterns (RFC 5322), currency input masking, and error sanitization mappings.
+     - **Component Geometry & Skeletons**: Specified exact card geometries, spacing tokens, and linear gradient transitions for skeleton loaders (`AppShimmer`).
+
+3. **Phase 3 — Contract-First Execution**:
+   - Implementation proceeded in strict adherence to the drafted specifications:
+     - Implemented design tokens (`AppColors`, `AppRadius`, `AppSpacing`, `AppTheme`).
+     - Built feature modules (`auth`, `dashboard`, `products`, `savings`) in isolation with zero inter-feature coupling.
+     - Built data layers adhering strictly to abstract contracts, enabling trivial mock injection for tests.
+
+4. **Phase 4 — Specification Verification & Test Automation**:
+   - Every behavior outlined in the specifications was backed by automated tests:
+     - Sealed state transitions and repository error recovery verified in unit tests.
+     - Screen rendering, form entry, and user flows verified in widget tests.
+     - Achieved **110 passing automated tests** with **0 static analyzer issues**.
 
 ---
 
@@ -178,8 +220,8 @@ Beyond the baseline requirements in the assessment brief, several enterprise-gra
 8. **One-Tap Test Credential Auto-Fill**:
    - Added an evaluator convenience button on the Login screen that automatically populates the assessment's test credentials (`test@bank.com` / `Password123`) in a single tap, speeding up manual testing.
 
-9. **Comprehensive 106-Test Automated Suite**:
-   - Authored 106 automated unit and widget tests covering all repositories, sealed state transitions, validation formatters, screen renders, error handlers, and form submissions with a 100% green pass rate.
+9. **Comprehensive 110-Test Automated Suite**:
+   - Authored 110 automated unit and widget tests covering all repositories, sealed state transitions, validation formatters, screen renders, skeleton shimmers, error handlers, and form submissions with a 100% green pass rate.
 
 10. **Centralized User-Friendly Error Sanitization (`ErrorHandler`)**:
    - Implemented centralized exception interceptors ensuring no raw stack traces, OS socket errors (`errno = 7`, `Failed host lookup`), or SQLite syntax codes ever leak to screens. Automatically maps failures to polite, actionable guidance with retry triggers.
@@ -363,7 +405,7 @@ Password: Password123
 
 ---
 
-## Testing & Quality Assurance (106 Tests)
+## Testing & Quality Assurance (110 Tests)
 
 The repository features comprehensive automated test coverage across all layers:
 
@@ -374,11 +416,11 @@ fvm flutter analyze
 ```
 
 ### Automated Test Suite
-**106 automated unit and widget tests** passing at 100%:
+**110 automated unit and widget tests** passing at 100%:
 
 ```bash
 fvm flutter test
-# Output: 00:07 +106: All tests passed!
+# Output: 00:08 +110: All tests passed!
 ```
 
 ### Test Coverage Highlights:
@@ -492,7 +534,7 @@ fvm flutter build apk --debug
 - [x] **Database Architecture**: Abstracted `DatabaseService` backed by SQLite (`sqflite`) for core banking data.
 - [x] **State Management**: Riverpod 2.0+ Notifiers with sealed class state hierarchies and zero `setState` on screens.
 - [x] **Design System & Material 3**: 100% tokenized color palette, radius, spacing, typography (Inter), and elevation.
-- [x] **Automated Tests**: 106 automated unit and widget tests passing with 100% green bar.
+- [x] **Automated Tests**: 110 automated unit and widget tests passing with 100% green bar.
 - [x] **Centralized Error Handling**: Unified `ErrorHandler` sanitizing all network, database, disk, and format exceptions into clean user-friendly messages.
 - [x] **Static Analysis**: `flutter analyze` with 0 warnings and 0 errors.
 - [x] **Pre-built APK**: Available at [`apk/app-release.apk`](./apk/app-release.apk) and on [GitHub Releases](https://github.com/krysnkem/koins_bank_savings_app/releases).
