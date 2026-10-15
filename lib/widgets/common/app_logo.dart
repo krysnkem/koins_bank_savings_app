@@ -21,7 +21,7 @@ class AppLogo extends StatelessWidget {
       return SizedBox(
         width: emblemSize,
         height: emblemSize,
-        child: const CustomPaint(painter: _OrigamiKPainter()),
+        child: const CustomPaint(painter: OrigamiKPainter()),
       );
     }
 
@@ -32,7 +32,7 @@ class AppLogo extends StatelessWidget {
         SizedBox(
           width: emblemSize,
           height: emblemSize,
-          child: const CustomPaint(painter: _OrigamiKPainter()),
+          child: const CustomPaint(painter: OrigamiKPainter()),
         ),
         SizedBox(height: height * 0.12),
         Text(
@@ -69,8 +69,8 @@ class AppLogo extends StatelessWidget {
 }
 
 /// Custom painter for the multi-faceted emerald origami 'K'
-class _OrigamiKPainter extends CustomPainter {
-  const _OrigamiKPainter();
+class OrigamiKPainter extends CustomPainter {
+  const OrigamiKPainter();
 
   @override
   void paint(Canvas canvas, Size size) {

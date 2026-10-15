@@ -5,7 +5,7 @@ A high-performance fintech mobile savings application built for the **Koins MFB 
 > **Flutter Version**: Flutter 3.29.x (Dart 3.7.x) / Stable  
 > **Target Platforms**: Android (API 21+) & iOS (iOS 13+)  
 > **Pre-built APK**: [Download via GitHub Releases](https://github.com/krysnkem/koins_bank_savings_app/releases/latest/download/app-release.apk) or locally at [`apk/app-release.apk`](./apk/app-release.apk)  
-> **Test Coverage**: 110 Automated Unit & Widget Tests (100% Green)
+> **Test Coverage**: 111 Automated Unit & Widget Tests (100% Green)
 
 ---
 
@@ -26,7 +26,7 @@ A high-performance fintech mobile savings application built for the **Koins MFB 
 12. [REST API Integration (DummyJSON Posts)](#rest-api-integration-dummyjson-posts)
 13. [Centralized Error Handling Architecture (`ErrorHandler`)](#centralized-error-handling-architecture-errorhandler)
 14. [Mock Authentication & Test Credentials](#mock-authentication--test-credentials)
-15. [Testing & Quality Assurance (110 Tests)](#testing--quality-assurance-110-tests)
+15. [Testing & Quality Assurance (111 Tests)](#testing--quality-assurance-111-tests)
 16. [Setup & Build Instructions](#setup--build-instructions)
 17. [Screenshots & Visual Showcase](#screenshots--visual-showcase)
 18. [Assumptions & Future Improvements](#assumptions--future-improvements)
@@ -60,7 +60,7 @@ flowchart LR
     A["1. Requirements Ingestion<br/>(Assessment Brief & Constraints)"] --> B["2. Specification Drafting<br/>(Models, Contracts, State Machines)"]
     B --> C["3. Architectural Foundation<br/>(Theme Tokens, Core, Router)"]
     C --> D["4. Contract-First Implementation<br/>(Domain, Presentation, Repos)"]
-    D --> E["5. Verification & QA<br/>(110 Tests, Zero Analyzer Lints)"]
+    D --> E["5. Verification & QA<br/>(111 Tests, Zero Analyzer Lints)"]
 ```
 
 ### The 4-Phase SDD Engineering Lifecycle:
@@ -86,7 +86,7 @@ flowchart LR
    - Every behavior outlined in the specifications was backed by automated tests:
      - Sealed state transitions and repository error recovery verified in unit tests.
      - Screen rendering, form entry, and user flows verified in widget tests.
-     - Achieved **110 passing automated tests** with **0 static analyzer issues**.
+     - Achieved **111 passing automated tests** with **0 static analyzer issues**.
 
 ---
 
@@ -220,8 +220,8 @@ Beyond the baseline requirements in the assessment brief, several enterprise-gra
 8. **One-Tap Test Credential Auto-Fill**:
    - Added an evaluator convenience button on the Login screen that automatically populates the assessment's test credentials (`test@bank.com` / `Password123`) in a single tap, speeding up manual testing.
 
-9. **Comprehensive 110-Test Automated Suite**:
-   - Authored 110 automated unit and widget tests covering all repositories, sealed state transitions, validation formatters, screen renders, skeleton shimmers, error handlers, and form submissions with a 100% green pass rate.
+9. **Comprehensive 111-Test Automated Suite**:
+   - Authored 111 automated unit and widget tests covering all repositories, sealed state transitions, validation formatters, screen renders, skeleton shimmers, error handlers, and form submissions with a 100% green pass rate.
 
 10. **Centralized User-Friendly Error Sanitization (`ErrorHandler`)**:
    - Implemented centralized exception interceptors ensuring no raw stack traces, OS socket errors (`errno = 7`, `Failed host lookup`), or SQLite syntax codes ever leak to screens. Automatically maps failures to polite, actionable guidance with retry triggers.
@@ -405,7 +405,7 @@ Password: Password123
 
 ---
 
-## Testing & Quality Assurance (110 Tests)
+## Testing & Quality Assurance (111 Tests)
 
 The repository features comprehensive automated test coverage across all layers:
 
@@ -416,11 +416,11 @@ fvm flutter analyze
 ```
 
 ### Automated Test Suite
-**110 automated unit and widget tests** passing at 100%:
+**111 automated unit and widget tests** passing at 100%:
 
 ```bash
 fvm flutter test
-# Output: 00:08 +110: All tests passed!
+# Output: 00:10 +111: All tests passed!
 ```
 
 ### Test Coverage Highlights:
@@ -534,7 +534,8 @@ fvm flutter build apk --debug
 - [x] **Database Architecture**: Abstracted `DatabaseService` backed by SQLite (`sqflite`) for core banking data.
 - [x] **State Management**: Riverpod 2.0+ Notifiers with sealed class state hierarchies and zero `setState` on screens.
 - [x] **Design System & Material 3**: 100% tokenized color palette, radius, spacing, typography (Inter), and elevation.
-- [x] **Automated Tests**: 110 automated unit and widget tests passing with 100% green bar.
+- [x] **Automated Tests**: 111 automated unit and widget tests passing with 100% green bar.
+- [x] **Branded App Launcher Icons**: Custom high-resolution multi-faceted origami 'K' launcher icon and Android adaptive icon generated from vector canvas painters.
 - [x] **Centralized Error Handling**: Unified `ErrorHandler` sanitizing all network, database, disk, and format exceptions into clean user-friendly messages.
 - [x] **Static Analysis**: `flutter analyze` with 0 warnings and 0 errors.
 - [x] **Pre-built APK**: Available at [`apk/app-release.apk`](./apk/app-release.apk) and on [GitHub Releases](https://github.com/krysnkem/koins_bank_savings_app/releases).
